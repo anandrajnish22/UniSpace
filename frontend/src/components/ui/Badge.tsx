@@ -1,60 +1,39 @@
-import { clsx } from 'clsx';
+import { type HTMLAttributes } from 'react';
+import { cn } from '@/lib/utils';
 
-type BadgeVariant = 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'accent';
-type BadgeSize = 'sm' | 'md';
-
-interface BadgeProps {
-  children: React.ReactNode;
-  variant?: BadgeVariant;
-  size?: BadgeSize;
-  dot?: boolean;
-  className?: string;
+interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
+  variant?: 'default' | 'secondary' | 'outline' | 'success' | 'warning' | 'danger';
 }
 
-const variantStyles: Record<BadgeVariant, string> = {
-  default: 'bg-surface-100 text-surface-600',
-  primary: 'bg-primary-50 text-primary-700',
-  success: 'bg-success-50 text-green-700',
-  warning: 'bg-warning-50 text-amber-700',
-  danger: 'bg-danger-50 text-red-700',
-  accent: 'bg-accent-50 text-purple-700',
-};
+export const Badge = ({ className, variant = 'default', children, ...props }: BadgeProps) => {
+  const base = 'inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full transition-colors duration-200 leading-none tracking-wide';
 
-const sizeStyles: Record<BadgeSize, string> = {
-  sm: 'px-2 py-0.5 text-xs',
-  md: 'px-2.5 py-1 text-xs',
-};
+  const variants: Record<string, string> = {
+    // Default: subtle red-orange on dark bg
+    default:
+      'bg-primary-500/15 text-primary-400 border border-primary-500/25',
 
-export function Badge({
-  children,
-  variant = 'default',
-  size = 'sm',
-  dot = false,
-  className,
-}: BadgeProps) {
+    // Secondary: muted surface
+    secondary:
+      'bg-surface-700 text-surface-100 border border-surface-600',
+
+    // Outline only
+    outline:
+      'bg-transparent border border-surface-600 text-surface-100',
+
+    success:
+      'bg-success-500/15 text-success-400 border border-success-500/25',
+
+    warning:
+      'bg-amber-500/15 text-amber-400 border border-amber-500/25',
+
+    danger:
+      'bg-red-500/15 text-red-400 border border-red-500/25',
+  };
+
   return (
-    <span
-      className={clsx(
-        'inline-flex items-center gap-1 font-medium rounded-full',
-        variantStyles[variant],
-        sizeStyles[size],
-        className
-      )}
-    >
-      {dot && (
-        <span
-          className={clsx(
-            'w-1.5 h-1.5 rounded-full',
-            variant === 'success' && 'bg-green-500',
-            variant === 'warning' && 'bg-amber-500',
-            variant === 'danger' && 'bg-red-500',
-            variant === 'primary' && 'bg-primary-500',
-            variant === 'accent' && 'bg-purple-500',
-            variant === 'default' && 'bg-surface-400'
-          )}
-        />
-      )}
+    <span className={cn(base, variants[variant], className)} {...props}>
       {children}
     </span>
   );
-}
+};

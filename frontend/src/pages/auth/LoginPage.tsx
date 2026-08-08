@@ -46,18 +46,23 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface-50 p-4">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: '#0a0a0a' }}>
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-block">
-            <h1 className="text-3xl font-display font-bold text-gradient">UniSpace</h1>
+            <h1
+              className="text-3xl font-bold text-gradient"
+              style={{ fontFamily: "'Clash Display', sans-serif" }}
+            >
+              UniSpace
+            </h1>
           </Link>
-          <p className="text-surface-500 mt-2">Welcome back! Please enter your details.</p>
+          <p className="mt-2 text-sm" style={{ color: '#6b6b6b' }}>Welcome back! Please enter your details.</p>
         </div>
 
         {/* Card */}
-        <div className="glass p-8 rounded-2xl shadow-elevated">
+        <div className="glass p-8 rounded-2xl" style={{ background: 'rgba(20,20,20,0.9)', border: '1px solid rgba(232,75,58,0.15)', backdropFilter: 'blur(16px)' }}>
           {error && (
             <div className="mb-6 p-4 bg-danger-50 text-danger-600 rounded-lg text-sm border border-danger-100">
               {error}

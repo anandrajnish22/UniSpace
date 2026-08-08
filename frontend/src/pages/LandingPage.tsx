@@ -141,24 +141,16 @@ const testimonials = [
 
 export function LandingPage() {
   return (
-    <div className="min-h-screen bg-surface-50">
+    <div className="min-h-screen" style={{ background: '#0a0a0a' }}>
       <Navbar />
 
       {/* ── HERO ────────────────────────────────────────── */}
       <section className="relative overflow-hidden pt-32 pb-20 lg:pt-44 lg:pb-32">
         {/* Background decorations */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-primary-100/40 blur-3xl" />
-          <div className="absolute top-20 -left-40 w-[500px] h-[500px] rounded-full bg-accent-100/30 blur-3xl" />
-          <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] rounded-full bg-blue-100/30 blur-3xl" />
-          {/* Grid pattern */}
-          <div
-            className="absolute inset-0 opacity-[0.03]"
-            style={{
-              backgroundImage: 'radial-gradient(circle, #6366f1 1px, transparent 1px)',
-              backgroundSize: '32px 32px',
-            }}
-          />
+          <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full blur-3xl" style={{ background: 'rgba(232,75,58,0.08)' }} />
+          <div className="absolute top-20 -left-40 w-[500px] h-[500px] rounded-full blur-3xl" style={{ background: 'rgba(245,166,35,0.05)' }} />
+          <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] rounded-full blur-3xl" style={{ background: 'rgba(232,75,58,0.04)' }} />
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -170,7 +162,10 @@ export function LandingPage() {
           >
             {/* Badge */}
             <motion.div variants={fadeUp} className="mb-6">
-              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-50 border border-primary-200/50 text-primary-700 text-sm font-medium">
+              <span
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold"
+                style={{ fontFamily: "'JetBrains Mono', monospace", background: 'rgba(232,75,58,0.1)', border: '1px solid rgba(232,75,58,0.3)', color: '#e84b3a' }}
+              >
                 <Sparkles className="w-4 h-4" />
                 Study. Work. Connect. Discover.
               </span>
@@ -179,7 +174,8 @@ export function LandingPage() {
             {/* Headline */}
             <motion.h1
               variants={fadeUp}
-              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold font-display tracking-tight text-surface-900 leading-[1.1]"
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1]"
+              style={{ fontFamily: "'Clash Display', sans-serif", color: '#f5f3ef' }}
             >
               Your University.{' '}
               <span className="text-gradient">One Space.</span>
@@ -188,7 +184,8 @@ export function LandingPage() {
             {/* Subheading */}
             <motion.p
               variants={fadeUp}
-              className="mt-6 text-lg sm:text-xl text-surface-500 max-w-2xl mx-auto leading-relaxed"
+              className="mt-6 text-lg sm:text-xl max-w-2xl mx-auto leading-relaxed"
+              style={{ color: '#d4d0c8' }}
             >
               Study, discover opportunities, connect with people and build your
               future — all from one platform designed for university students.
