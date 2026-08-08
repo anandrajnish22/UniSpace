@@ -3,6 +3,7 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { Loader2 } from 'lucide-react';
 import { api } from '@/lib/api';
+import { AppLayout } from './AppLayout';
 
 export const ProtectedRoute = () => {
   const { user, isAuthenticated, isLoading, setUser, setLoading } = useAuthStore();
@@ -22,6 +23,7 @@ export const ProtectedRoute = () => {
         }
       } catch (error) {
         console.error('Auth check failed:', error);
+        localStorage.removeItem('unispace_token');
       } finally {
         setLoading(false);
       }
@@ -37,7 +39,12 @@ export const ProtectedRoute = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface-50">
-        <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-accent-500 rounded-xl flex items-center justify-center shadow-lg animate-pulse">
+            <Loader2 className="w-6 h-6 text-white animate-spin" />
+          </div>
+          <p className="text-surface-500 text-sm font-medium">Loading UniSpace...</p>
+        </div>
       </div>
     );
   }
@@ -46,5 +53,6 @@ export const ProtectedRoute = () => {
     return <Navigate to="/login" replace />;
   }
 
-  return <Outlet />;
+  return <AppLayout />;
 };
+
