@@ -6,6 +6,8 @@ import { RegisterPage } from '@/pages/auth/RegisterPage';
 
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute';
 import { DashboardPage } from '@/pages/DashboardPage';
+import { ProfileSetupPage } from '@/pages/onboarding/ProfileSetupPage';
+import { PublicProfilePage } from '@/pages/profile/PublicProfilePage';
 
 /**
  * Application router configuration.
@@ -28,13 +30,14 @@ export const router = createBrowserRouter([
     element: <RegisterPage />,
   },
 
-  // Sprint 4+: Protected routes will be wrapped in AuthLayout
+  // Protected Routes
   {
-    path: '/dashboard',
+    path: '/',
     element: <ProtectedRoute />,
     children: [
-      { path: '', element: <DashboardPage /> },
-      // { path: 'profile', element: <ProfilePage /> },
+      { path: 'dashboard', element: <DashboardPage /> },
+      { path: 'onboarding', element: <ProfileSetupPage /> },
+      { path: 'profile/:id', element: <PublicProfilePage /> },
       // { path: 'jobs', element: <JobsPage /> },
       // { path: 'marketplace', element: <MarketplacePage /> },
       // { path: 'events', element: <EventsPage /> },
