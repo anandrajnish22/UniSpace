@@ -1,0 +1,656 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ═══════════════════════════════════════════════════════════
+// 1. CORE AUTH & USERS
+// ═══════════════════════════════════════════════════════════
+
+model User {
+  id               String    @id @default(uuid())
+  email            String    @unique
+  passwordHash     String
+  name             String
+  role             String    @default("STUDENT") // STUDENT, COMPANY, ORGANIZER, MODERATOR, ADMIN
+  isEmailVerified  Boolean   @default(false)
+  isSuspended      Boolean   @default(false)
+  isBanned         Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  lastLoginAt      DateTime?
+
+  // Relations
+  profile          Profile?
+  company          Company?
+  skills           UserSkill[]
+  projects         Project[]
+  certifications   Certification[]
+  
+  // Feature Relations
+  jobApplications  JobApplication[]
+  listings         Listing[]
+  offersMade       Offer[]
+  eventRegistrations EventRegistration[]
+  eventAttendances EventAttendance[]
+  communities      CommunityMember[]
+  posts            Post[]
+  comments         Comment[]
+  likes            Like[]
+  pollVotes        PollVote[]
+  resourcesUploaded StudyResource[]
+  studyGroups      StudyGroupMember[]
+  roomListings     RoomListing[]
+  roommatePrefs    RoommatePreference?
+  conversations    ConversationMember[]
+  messagesSent     Message[]
+  notifications    Notification[]
+  savedItems       SavedItem[]
+  reportsFiled     Report[] @relation("Reporter")
+  reportsAgainst   Report[] @relation("ReportedUser")
+}
+
+model Profile {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  avatar         String?
+  bio            String?
+  university     String?
+  department     String?
+  course         String?
+  graduationYear Int?
+  
+  githubUrl      String?
+  linkedinUrl    String?
+  portfolioUrl   String?
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Skill {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  category    String?
+  
+  userSkills  UserSkill[]
+  jobSkills   JobSkill[]
+}
+
+model UserSkill {
+  id          String   @id @default(uuid())
+  userId      String
+  skillId     String
+  proficiency String?  // BEGINNER, INTERMEDIATE, EXPERT
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill       Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, skillId])
+}
+
+model Project {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  title       String
+  description String
+  link        String?
+  imageUrl    String?
+  startDate   DateTime?
+  endDate     DateTime?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Certification {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name           String
+  issuer         String
+  issueDate      DateTime?
+  credentialUrl  String?
+  
+  createdAt      DateTime @default(now())
+}
+
+// ═══════════════════════════════════════════════════════════
+// 2. JOBS & INTERNSHIPS
+// ═══════════════════════════════════════════════════════════
+
+model Company {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name        String
+  logo        String?
+  website     String?
+  description String?
+  location    String?
+  industry    String?
+  size        String?
+  isVerified  Boolean  @default(false)
+  
+  jobs        Job[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Job {
+  id          String   @id @default(uuid())
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  title       String
+  description String
+  location    String?
+  type        String   // INTERNSHIP, FULL_TIME, PART_TIME, FREELANCE
+  workMode    String   // REMOTE, HYBRID, ONSITE
+  salaryMin   Int?
+  salaryMax   Int?
+  currency    String   @default("INR")
+  experience  String?
+  deadline    DateTime?
+  isActive    Boolean  @default(true)
+  
+  skills      JobSkill[]
+  applications JobApplication[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model JobSkill {
+  id        String   @id @default(uuid())
+  jobId     String
+  skillId   String
+  
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  skill     Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, skillId])
+}
+
+model JobApplication {
+  id          String   @id @default(uuid())
+  jobId       String
+  userId      String
+  
+  job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  resumeUrl   String
+  coverLetter String?
+  status      String   @default("APPLIED") // APPLIED, SHORTLISTED, INTERVIEW, SELECTED, REJECTED
+  
+  interviews  Interview[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([jobId, userId])
+}
+
+model Interview {
+  id            String         @id @default(uuid())
+  applicationId String
+  application   JobApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  
+  scheduledAt   DateTime
+  durationMins  Int            @default(60)
+  meetingLink   String?
+  notes         String?
+  status        String         @default("SCHEDULED") // SCHEDULED, COMPLETED, CANCELLED
+  
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+// ═══════════════════════════════════════════════════════════
+// 3. MARKETPLACE (UniMarket)
+// ═══════════════════════════════════════════════════════════
+
+model Listing {
+  id          String   @id @default(uuid())
+  sellerId    String
+  seller      User     @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  
+  title       String
+  description String
+  price       Float
+  category    String   // ELECTRONICS, BOOKS, FURNITURE, HOSTEL_ITEMS, CYCLES, ACCESSORIES, NOTES, OTHER
+  condition   String   // NEW, LIKE_NEW, GOOD, FAIR
+  location    String?
+  isNegotiable Boolean @default(false)
+  status      String   @default("ACTIVE") // ACTIVE, SOLD, HIDDEN
+  
+  images      ListingImage[]
+  offers      Offer[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ListingImage {
+  id        String   @id @default(uuid())
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  
+  url       String
+  order     Int      @default(0)
+  
+  createdAt DateTime @default(now())
+}
+
+model Offer {
+  id        String   @id @default(uuid())
+  listingId String
+  buyerId   String
+  
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  buyer     User     @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  
+  amount    Float
+  message   String?
+  status    String   @default("PENDING") // PENDING, ACCEPTED, REJECTED, COUNTERED, EXPIRED
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ═══════════════════════════════════════════════════════════
+// 4. EVENTS (UniEvents)
+// ═══════════════════════════════════════════════════════════
+
+model Event {
+  id            String   @id @default(uuid())
+  organizerId   String
+  // We link organizer to a regular user who has ORGANIZER role
+  
+  title         String
+  description   String
+  bannerUrl     String?
+  venue         String
+  date          DateTime
+  startTime     String?
+  endTime       String?
+  capacity      Int?
+  ticketPrice   Float    @default(0)
+  category      String   // HACKATHON, WORKSHOP, SEMINAR, CULTURAL, SPORTS, COMPETITION, MEETUP
+  status        String   @default("PUBLISHED") // DRAFT, PUBLISHED, CANCELLED, COMPLETED
+  
+  registrations EventRegistration[]
+  attendances   EventAttendance[]
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model EventRegistration {
+  id        String   @id @default(uuid())
+  eventId   String
+  userId    String
+  
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  qrCode    String   @unique
+  status    String   @default("CONFIRMED") // CONFIRMED, CANCELLED
+  
+  createdAt DateTime @default(now())
+
+  @@unique([eventId, userId])
+}
+
+model EventAttendance {
+  id        String   @id @default(uuid())
+  eventId   String
+  userId    String
+  
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  scannedAt DateTime @default(now())
+  scannedBy String?  // ID of the organizer who scanned
+  
+  @@unique([eventId, userId])
+}
+
+// ═══════════════════════════════════════════════════════════
+// 5. COMMUNITIES
+// ═══════════════════════════════════════════════════════════
+
+model Community {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String
+  avatarUrl   String?
+  bannerUrl   String?
+  isPrivate   Boolean  @default(false)
+  
+  members     CommunityMember[]
+  posts       Post[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model CommunityMember {
+  id          String    @id @default(uuid())
+  communityId String
+  userId      String
+  
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  role        String    @default("MEMBER") // ADMIN, MODERATOR, MEMBER
+  
+  createdAt   DateTime  @default(now())
+
+  @@unique([communityId, userId])
+}
+
+model Post {
+  id          String    @id @default(uuid())
+  communityId String?
+  userId      String
+  
+  community   Community? @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  author      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  title       String?
+  content     String
+  type        String     @default("DISCUSSION") // DISCUSSION, QUESTION, ANNOUNCEMENT, RESOURCE, POLL
+  
+  comments    Comment[]
+  likes       Like[]
+  poll        Poll?
+  
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Comment {
+  id          String    @id @default(uuid())
+  postId      String
+  userId      String
+  parentId    String?   // For nested comments
+  
+  post        Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent      Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: SetNull)
+  replies     Comment[] @relation("CommentReplies")
+  
+  content     String
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  postId    String
+  userId    String
+  
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+}
+
+model Poll {
+  id        String   @id @default(uuid())
+  postId    String   @unique
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  question  String
+  endDate   DateTime?
+  
+  options   PollOption[]
+}
+
+model PollOption {
+  id        String   @id @default(uuid())
+  pollId    String
+  poll      Poll     @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  
+  text      String
+  
+  votes     PollVote[]
+}
+
+model PollVote {
+  id        String     @id @default(uuid())
+  optionId  String
+  userId    String
+  
+  option    PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime   @default(now())
+
+  @@unique([optionId, userId]) // User can only vote once per option
+}
+
+// ═══════════════════════════════════════════════════════════
+// 6. STUDY RESOURCES & GROUPS
+// ═══════════════════════════════════════════════════════════
+
+model StudyResource {
+  id          String   @id @default(uuid())
+  uploaderId  String
+  uploader    User     @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+  
+  title       String
+  description String?
+  subject     String?
+  semester    String?
+  course      String?
+  university  String?
+  fileUrl     String
+  fileType    String?
+  type        String   @default("NOTE") // NOTE, PDF, PREVIOUS_PAPER, ROADMAP, TUTORIAL
+  
+  downloads   Int      @default(0)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model StudyGroup {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  subject     String?
+  isPrivate   Boolean  @default(false)
+  
+  members     StudyGroupMember[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model StudyGroupMember {
+  id           String     @id @default(uuid())
+  studyGroupId String
+  userId       String
+  
+  group        StudyGroup @relation(fields: [studyGroupId], references: [id], onDelete: Cascade)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  role         String     @default("MEMBER") // ADMIN, MEMBER
+  
+  createdAt    DateTime   @default(now())
+
+  @@unique([studyGroupId, userId])
+}
+
+// ═══════════════════════════════════════════════════════════
+// 7. ROOMMATES & RENTALS (UniRoom)
+// ═══════════════════════════════════════════════════════════
+
+model RoomListing {
+  id             String   @id @default(uuid())
+  listerId       String
+  lister         User     @relation(fields: [listerId], references: [id], onDelete: Cascade)
+  
+  type           String   // ROOMMATE, PG, FLAT, HOSTEL, BED
+  location       String
+  rentAmount     Float
+  depositAmount  Float?
+  availableFrom  DateTime
+  description    String
+  genderPref     String?  // ANY, MALE, FEMALE
+  amenities      String?  // Stored as JSON string or comma separated
+  images         String?  // Stored as JSON array string
+  status         String   @default("AVAILABLE") // AVAILABLE, TAKEN, HIDDEN
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model RoommatePreference {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  budgetMin      Float?
+  budgetMax      Float?
+  locations      String?  // JSON string
+  lifestyle      String?  // EARLY_BIRD, NIGHT_OWL, etc.
+  foodPref       String?  // VEG, NON_VEG, ANY
+  moveInDate     DateTime?
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+// ═══════════════════════════════════════════════════════════
+// 8. MESSAGING (Socket.IO)
+// ═══════════════════════════════════════════════════════════
+
+model Conversation {
+  id          String   @id @default(uuid())
+  type        String   @default("DIRECT") // DIRECT, MARKETPLACE, JOB, EVENT, STUDY_GROUP, COMMUNITY
+  referenceId String?  // ID of the listing, job, event, etc.
+  
+  members     ConversationMember[]
+  messages    Message[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ConversationMember {
+  id             String       @id @default(uuid())
+  conversationId String
+  userId         String
+  
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  lastReadAt     DateTime?
+  
+  createdAt      DateTime     @default(now())
+
+  @@unique([conversationId, userId])
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  conversationId String
+  senderId       String
+  
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  
+  content        String
+  attachmentUrl  String?
+  attachmentType String?
+  isDeleted      Boolean      @default(false)
+  
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+// ═══════════════════════════════════════════════════════════
+// 9. NOTIFICATIONS & SAVED ITEMS
+// ═══════════════════════════════════════════════════════════
+
+model Notification {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type        String   // INFO, SUCCESS, WARNING, SYSTEM
+  title       String
+  content     String
+  link        String?
+  isRead      Boolean  @default(false)
+  
+  createdAt   DateTime @default(now())
+}
+
+model SavedItem {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  itemType    String   // JOB, LISTING, EVENT, RESOURCE, COMMUNITY
+  itemId      String
+  
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, itemType, itemId])
+}
+
+// ═══════════════════════════════════════════════════════════
+// 10. MODERATION & ADMIN
+// ═══════════════════════════════════════════════════════════
+
+model Report {
+  id          String   @id @default(uuid())
+  reporterId  String
+  reportedId  String?  // The user being reported (optional)
+  
+  reporter    User     @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  reportedUser User?   @relation("ReportedUser", fields: [reportedId], references: [id], onDelete: SetNull)
+  
+  itemType    String   // USER, POST, LISTING, JOB, EVENT, RESOURCE, MESSAGE
+  itemId      String
+  reason      String   // SPAM, SCAM, HARASSMENT, FAKE_INFO, INAPPROPRIATE, FRAUD, OTHER
+  description String?
+  status      String   @default("PENDING") // PENDING, REVIEWED, RESOLVED, DISMISSED
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Generic table for analytics snapshots
+model AnalyticsSnapshot {
+  id              String   @id @default(uuid())
+  date            DateTime @unique
+  
+  totalUsers      Int      @default(0)
+  activeUsers     Int      @default(0)
+  jobsPosted      Int      @default(0)
+  applications    Int      @default(0)
+  listingsCreated Int      @default(0)
+  eventsCreated   Int      @default(0)
+  
+  createdAt       DateTime @default(now())
+}
