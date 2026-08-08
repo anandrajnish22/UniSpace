@@ -16,6 +16,7 @@ import { EventsPage } from '@/pages/events/EventsPage';
 import { EventDetailPage } from '@/pages/events/EventDetailPage';
 import { CommunitiesPage } from '@/pages/communities/CommunitiesPage';
 import { CommunityDetailPage } from '@/pages/communities/CommunityDetailPage';
+import { StudyPage } from '@/pages/study/StudyPage';
 
 /**
  * Application router configuration.
@@ -54,7 +55,7 @@ export const router = createBrowserRouter([
       { path: 'events/:id', element: <EventDetailPage /> },
       { path: 'communities', element: <CommunitiesPage /> },
       { path: 'communities/:id', element: <CommunityDetailPage /> },
-      // { path: 'study', element: <StudyPage /> },
+      { path: 'study', element: <StudyPage /> },
       // { path: 'roommates', element: <RoommatesPage /> },
       // { path: 'messages', element: <MessagesPage /> },
       // { path: 'notifications', element: <NotificationsPage /> },
