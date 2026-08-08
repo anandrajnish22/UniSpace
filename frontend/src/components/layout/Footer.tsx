@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { GraduationCap, Github, Twitter, Linkedin, Mail } from 'lucide-react';
+import { GraduationCap, Code2, MessageCircle, Globe, Mail } from 'lucide-react';
 
 const footerLinks = {
   Product: [
@@ -29,9 +29,9 @@ const footerLinks = {
 };
 
 const socialLinks = [
-  { icon: Twitter, href: '#', label: 'Twitter' },
-  { icon: Github, href: '#', label: 'GitHub' },
-  { icon: Linkedin, href: '#', label: 'LinkedIn' },
+  { icon: MessageCircle, href: '#', label: 'Twitter' },
+  { icon: Code2, href: '#', label: 'GitHub' },
+  { icon: Globe, href: '#', label: 'LinkedIn' },
   { icon: Mail, href: '#', label: 'Email' },
 ];
 
