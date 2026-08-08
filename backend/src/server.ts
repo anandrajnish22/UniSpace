@@ -44,9 +44,11 @@ app.get('/api/health', (_req, res) => {
 // ── API Routes (will be added in subsequent sprints) ────────────
 import authRoutes from './modules/auth/auth.routes';
 import profileRoutes from './modules/profile/profile.routes';
+import jobRoutes from './modules/jobs/jobs.routes';
 
 app.use('/api/auth', authRoutes);
 app.use('/api/profiles', profileRoutes);
+app.use('/api/jobs', jobRoutes);
 // app.use('/api/listings', listingRoutes);
 // app.use('/api/events', eventRoutes);
 // app.use('/api/communities', communityRoutes);

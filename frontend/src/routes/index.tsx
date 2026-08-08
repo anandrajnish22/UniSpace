@@ -8,6 +8,8 @@ import { ProtectedRoute } from '@/components/layout/ProtectedRoute';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { ProfileSetupPage } from '@/pages/onboarding/ProfileSetupPage';
 import { PublicProfilePage } from '@/pages/profile/PublicProfilePage';
+import { JobsPage } from '@/pages/jobs/JobsPage';
+import { JobDetailPage } from '@/pages/jobs/JobDetailPage';
 
 /**
  * Application router configuration.
@@ -38,7 +40,8 @@ export const router = createBrowserRouter([
       { path: 'dashboard', element: <DashboardPage /> },
       { path: 'onboarding', element: <ProfileSetupPage /> },
       { path: 'profile/:id', element: <PublicProfilePage /> },
-      // { path: 'jobs', element: <JobsPage /> },
+      { path: 'jobs', element: <JobsPage /> },
+      { path: 'jobs/:id', element: <JobDetailPage /> },
       // { path: 'marketplace', element: <MarketplacePage /> },
       // { path: 'events', element: <EventsPage /> },
       // { path: 'communities', element: <CommunitiesPage /> },

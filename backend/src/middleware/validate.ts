@@ -19,7 +19,12 @@ export function validate(schema: ZodSchema, source: 'body' | 'query' | 'params' 
     }
 
     // Replace parsed data back (handles type coercion)
-    req[source] = result.data;
+    Object.defineProperty(req, source, {
+      value: result.data,
+      writable: true,
+      enumerable: true,
+      configurable: true
+    });
     next();
   };
 }
