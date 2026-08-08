@@ -10,6 +10,8 @@ import { ProfileSetupPage } from '@/pages/onboarding/ProfileSetupPage';
 import { PublicProfilePage } from '@/pages/profile/PublicProfilePage';
 import { JobsPage } from '@/pages/jobs/JobsPage';
 import { JobDetailPage } from '@/pages/jobs/JobDetailPage';
+import { MarketplacePage } from '@/pages/marketplace/MarketplacePage';
+import { ListingDetailPage } from '@/pages/marketplace/ListingDetailPage';
 
 /**
  * Application router configuration.
@@ -42,7 +44,8 @@ export const router = createBrowserRouter([
       { path: 'profile/:id', element: <PublicProfilePage /> },
       { path: 'jobs', element: <JobsPage /> },
       { path: 'jobs/:id', element: <JobDetailPage /> },
-      // { path: 'marketplace', element: <MarketplacePage /> },
+      { path: 'marketplace', element: <MarketplacePage /> },
+      { path: 'marketplace/:id', element: <ListingDetailPage /> },
       // { path: 'events', element: <EventsPage /> },
       // { path: 'communities', element: <CommunitiesPage /> },
       // { path: 'study', element: <StudyPage /> },
