@@ -170,6 +170,36 @@ async function main() {
     }
   });
 
+  // 6. Create Events
+  console.log('Creating events...');
+  await prisma.event.create({
+    data: {
+      organizerId: student1.id,
+      title: 'UniHack 2026 Hackathon',
+      description: 'Annual 24-hour campus hackathon. Build amazing web and AI applications!',
+      venue: 'Student Activity Center, Main Hall',
+      date: new Date(Date.now() + 86400000 * 7), // 7 days from now
+      category: 'HACKATHON',
+      status: 'PUBLISHED',
+      capacity: 100,
+      ticketPrice: 0
+    }
+  });
+
+  await prisma.event.create({
+    data: {
+      organizerId: student1.id,
+      title: 'Full-Stack Web Dev Workshop',
+      description: 'Learn modern React, TypeScript, and Express in this hands-on workshop.',
+      venue: 'Computer Science Lab 3',
+      date: new Date(Date.now() + 86400000 * 3), // 3 days from now
+      category: 'WORKSHOP',
+      status: 'PUBLISHED',
+      capacity: 40,
+      ticketPrice: 0
+    }
+  });
+
   console.log('✅ Seed completed successfully!');
   console.log('----------------------------------------------------');
   console.log('Test Accounts:');

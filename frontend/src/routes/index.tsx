@@ -12,6 +12,8 @@ import { JobsPage } from '@/pages/jobs/JobsPage';
 import { JobDetailPage } from '@/pages/jobs/JobDetailPage';
 import { MarketplacePage } from '@/pages/marketplace/MarketplacePage';
 import { ListingDetailPage } from '@/pages/marketplace/ListingDetailPage';
+import { EventsPage } from '@/pages/events/EventsPage';
+import { EventDetailPage } from '@/pages/events/EventDetailPage';
 
 /**
  * Application router configuration.
@@ -46,7 +48,8 @@ export const router = createBrowserRouter([
       { path: 'jobs/:id', element: <JobDetailPage /> },
       { path: 'marketplace', element: <MarketplacePage /> },
       { path: 'marketplace/:id', element: <ListingDetailPage /> },
-      // { path: 'events', element: <EventsPage /> },
+      { path: 'events', element: <EventsPage /> },
+      { path: 'events/:id', element: <EventDetailPage /> },
       // { path: 'communities', element: <CommunitiesPage /> },
       // { path: 'study', element: <StudyPage /> },
       // { path: 'roommates', element: <RoommatesPage /> },
