@@ -14,6 +14,8 @@ import { MarketplacePage } from '@/pages/marketplace/MarketplacePage';
 import { ListingDetailPage } from '@/pages/marketplace/ListingDetailPage';
 import { EventsPage } from '@/pages/events/EventsPage';
 import { EventDetailPage } from '@/pages/events/EventDetailPage';
+import { CommunitiesPage } from '@/pages/communities/CommunitiesPage';
+import { CommunityDetailPage } from '@/pages/communities/CommunityDetailPage';
 
 /**
  * Application router configuration.
@@ -50,7 +52,8 @@ export const router = createBrowserRouter([
       { path: 'marketplace/:id', element: <ListingDetailPage /> },
       { path: 'events', element: <EventsPage /> },
       { path: 'events/:id', element: <EventDetailPage /> },
-      // { path: 'communities', element: <CommunitiesPage /> },
+      { path: 'communities', element: <CommunitiesPage /> },
+      { path: 'communities/:id', element: <CommunityDetailPage /> },
       // { path: 'study', element: <StudyPage /> },
       // { path: 'roommates', element: <RoommatesPage /> },
       // { path: 'messages', element: <MessagesPage /> },
