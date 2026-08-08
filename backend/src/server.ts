@@ -42,7 +42,8 @@ app.get('/api/health', (_req, res) => {
 });
 
 // ── API Routes (will be added in subsequent sprints) ────────────
-// app.use('/api/auth', authRoutes);
+import authRoutes from './modules/auth/auth.routes';
+app.use('/api/auth', authRoutes);
 // app.use('/api/users', userRoutes);
 // app.use('/api/jobs', jobRoutes);
 // app.use('/api/listings', listingRoutes);
