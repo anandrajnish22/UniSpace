@@ -17,6 +17,7 @@ import { EventDetailPage } from '@/pages/events/EventDetailPage';
 import { CommunitiesPage } from '@/pages/communities/CommunitiesPage';
 import { CommunityDetailPage } from '@/pages/communities/CommunityDetailPage';
 import { StudyPage } from '@/pages/study/StudyPage';
+import { RoommatesPage } from '@/pages/roommates/RoommatesPage';
 
 /**
  * Application router configuration.
@@ -56,7 +57,7 @@ export const router = createBrowserRouter([
       { path: 'communities', element: <CommunitiesPage /> },
       { path: 'communities/:id', element: <CommunityDetailPage /> },
       { path: 'study', element: <StudyPage /> },
-      // { path: 'roommates', element: <RoommatesPage /> },
+      { path: 'roommates', element: <RoommatesPage /> },
       // { path: 'messages', element: <MessagesPage /> },
       // { path: 'notifications', element: <NotificationsPage /> },
       // { path: 'settings', element: <SettingsPage /> },
