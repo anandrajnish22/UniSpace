@@ -11,8 +11,8 @@ export const createListing = async (req: Request, res: Response, next: NextFunct
     const data = req.body;
 
     const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user || user.role !== 'STUDENT') {
-      throw new AppError('Only students can post marketplace listings', 403, 'FORBIDDEN');
+    if (!user) {
+      throw new AppError('User not found', 404, 'NOT_FOUND');
     }
 
     const listing = await prisma.listing.create({

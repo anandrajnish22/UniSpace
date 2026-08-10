@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '@/lib/api';
-import { ShoppingBag, Search, Filter, Loader2, MapPin } from 'lucide-react';
+import { ShoppingBag, Search, Filter, Loader2, MapPin, X } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 
 interface Listing {
   id: string;
@@ -22,6 +23,18 @@ export const MarketplacePage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
+
+  // Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [newListing, setNewListing] = useState({
+    title: '',
+    description: '',
+    price: '',
+    category: 'ELECTRONICS',
+    condition: 'LIKE_NEW',
+    location: '',
+  });
 
   const fetchListings = async () => {
     setIsLoading(true);
@@ -47,6 +60,35 @@ export const MarketplacePage = () => {
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm, selectedCategory]);
 
+  const handleCreateListing = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      await api.post('/listings', {
+        title: newListing.title,
+        description: newListing.description,
+        price: Number(newListing.price),
+        category: newListing.category,
+        condition: newListing.condition,
+        location: newListing.location,
+      });
+      setIsModalOpen(false);
+      setNewListing({
+        title: '',
+        description: '',
+        price: '',
+        category: 'ELECTRONICS',
+        condition: 'LIKE_NEW',
+        location: '',
+      });
+      fetchListings();
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to post listing');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-transparent py-12 px-4 sm:px-6 lg:px-8 text-white">
       <div className="max-w-7xl mx-auto">
@@ -55,7 +97,7 @@ export const MarketplacePage = () => {
             <h1 className="text-3xl font-display font-bold text-white">UniMarket</h1>
             <p className="mt-2 text-white/60">Buy and sell textbooks, electronics, and more with students.</p>
           </div>
-          <Button className="mt-4 md:mt-0">Post a Listing</Button>
+          <Button onClick={() => setIsModalOpen(true)} className="mt-4 md:mt-0">Post a Listing</Button>
         </div>
 
         {/* Filters */}
@@ -149,6 +191,111 @@ export const MarketplacePage = () => {
                 </div>
               </Link>
             ))}
+          </div>
+        )}
+
+        {/* Create Listing Modal */}
+        {isModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md overflow-y-auto">
+            <div className="relative w-full max-w-xl bg-slate-900/90 border border-white/10 rounded-2xl p-6 shadow-2xl space-y-6 text-white my-8">
+              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                <h3 className="text-xl font-bold font-display">Post an Item for Sale</h3>
+                <button 
+                  onClick={() => setIsModalOpen(false)}
+                  className="p-1 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateListing} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-white/70 mb-1">Item Title *</label>
+                  <Input 
+                    required 
+                    placeholder="e.g. MacBook Pro M1 16GB" 
+                    value={newListing.title}
+                    onChange={(e) => setNewListing({ ...newListing, title: e.target.value })}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-white/70 mb-1">Price ($) *</label>
+                    <Input 
+                      required
+                      type="number" 
+                      placeholder="450" 
+                      value={newListing.price}
+                      onChange={(e) => setNewListing({ ...newListing, price: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-white/70 mb-1">Category</label>
+                    <select
+                      className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-primary-500"
+                      value={newListing.category}
+                      onChange={(e) => setNewListing({ ...newListing, category: e.target.value })}
+                    >
+                      <option value="ELECTRONICS">Electronics</option>
+                      <option value="BOOKS">Books</option>
+                      <option value="FURNITURE">Furniture</option>
+                      <option value="CLOTHING">Clothing</option>
+                      <option value="OTHER">Other</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-white/70 mb-1">Condition</label>
+                    <select
+                      className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-primary-500"
+                      value={newListing.condition}
+                      onChange={(e) => setNewListing({ ...newListing, condition: e.target.value })}
+                    >
+                      <option value="NEW">Brand New</option>
+                      <option value="LIKE_NEW">Like New</option>
+                      <option value="GOOD">Good</option>
+                      <option value="FAIR">Fair</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-white/70 mb-1">Location *</label>
+                  <Input 
+                    required 
+                    placeholder="e.g. North Campus / Student Housing" 
+                    value={newListing.location}
+                    onChange={(e) => setNewListing({ ...newListing, location: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-white/70 mb-1">Description *</label>
+                  <textarea 
+                    required
+                    rows={4}
+                    className="w-full p-3 bg-black/40 border border-white/10 rounded-lg text-white text-sm placeholder:text-white/40 focus:outline-none focus:border-primary-500"
+                    placeholder="Describe the item condition, specs, reason for selling..."
+                    value={newListing.description}
+                    onChange={(e) => setNewListing({ ...newListing, description: e.target.value })}
+                  />
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setIsModalOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                    Post Listing
+                  </Button>
+                </div>
+              </form>
+            </div>
           </div>
         )}
       </div>

@@ -8,27 +8,41 @@ const prisma = new PrismaClient();
 export const createJob = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user.userId;
-    const { skills, ...jobData } = req.body;
+    const { skills, companyName, ...jobData } = req.body;
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: { company: true }
     });
 
-    if (!user || user.role !== 'COMPANY' || !user.company) {
-      throw new AppError('Only companies can post jobs', 403, 'FORBIDDEN');
+    if (!user) {
+      throw new AppError('User not found', 404, 'NOT_FOUND');
+    }
+
+    let companyId = user.company?.id;
+
+    if (!companyId) {
+      const company = await prisma.companyProfile.create({
+        data: {
+          userId: user.id,
+          name: companyName || `${user.name}'s Company`,
+          description: 'Hiring on UniSpace',
+        }
+      });
+      companyId = company.id;
     }
 
     const job = await prisma.job.create({
       data: {
         ...jobData,
-        companyId: user.company.id,
-        skills: skills ? {
+        companyId,
+        skills: skills && Array.isArray(skills) ? {
           create: skills.map((skillId: string) => ({ skillId }))
         } : undefined
       },
       include: {
-        skills: { include: { skill: true } }
+        skills: { include: { skill: true } },
+        company: true
       }
     });
 

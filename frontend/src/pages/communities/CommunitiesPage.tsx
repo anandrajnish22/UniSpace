@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '@/lib/api';
-import { Users, Search, Loader2, MessageSquare, ShieldCheck } from 'lucide-react';
+import { Users, Search, Loader2, MessageSquare, ShieldCheck, X } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 
 interface CommunityItem {
   id: string;
@@ -19,6 +20,16 @@ export const CommunitiesPage = () => {
   const [communities, setCommunities] = useState<CommunityItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [newCommunity, setNewCommunity] = useState({
+    name: '',
+    description: '',
+    category: 'TECH',
+    isPrivate: false,
+  });
 
   const fetchCommunities = async () => {
     setIsLoading(true);
@@ -43,6 +54,31 @@ export const CommunitiesPage = () => {
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm]);
 
+  const handleCreateCommunity = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      await api.post('/communities', {
+        name: newCommunity.name,
+        description: newCommunity.description,
+        category: newCommunity.category,
+        isPrivate: newCommunity.isPrivate,
+      });
+      setIsModalOpen(false);
+      setNewCommunity({
+        name: '',
+        description: '',
+        category: 'TECH',
+        isPrivate: false,
+      });
+      fetchCommunities();
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to create community');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-transparent py-12 px-4 sm:px-6 lg:px-8 text-white">
       <div className="max-w-7xl mx-auto">
@@ -51,7 +87,7 @@ export const CommunitiesPage = () => {
             <h1 className="text-3xl font-display font-bold text-white">UniHub Communities</h1>
             <p className="mt-2 text-white/60">Join student clubs, tech chapters, and interest groups.</p>
           </div>
-          <Button className="mt-4 md:mt-0">Create Community</Button>
+          <Button onClick={() => setIsModalOpen(true)} className="mt-4 md:mt-0">Create Community</Button>
         </div>
 
         {/* Search */}
@@ -131,6 +167,90 @@ export const CommunitiesPage = () => {
                 </div>
               </Link>
             ))}
+          </div>
+        )}
+
+        {/* Create Community Modal */}
+        {isModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md overflow-y-auto">
+            <div className="relative w-full max-w-xl bg-slate-900/90 border border-white/10 rounded-2xl p-6 shadow-2xl space-y-6 text-white my-8">
+              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                <h3 className="text-xl font-bold font-display">Create a New Student Community</h3>
+                <button 
+                  onClick={() => setIsModalOpen(false)}
+                  className="p-1 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateCommunity} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-white/70 mb-1">Community Name *</label>
+                  <Input 
+                    required 
+                    placeholder="e.g. Web3 & Blockchain Club" 
+                    value={newCommunity.name}
+                    onChange={(e) => setNewCommunity({ ...newCommunity, name: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-white/70 mb-1">Category</label>
+                  <select
+                    className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-primary-500"
+                    value={newCommunity.category}
+                    onChange={(e) => setNewCommunity({ ...newCommunity, category: e.target.value })}
+                  >
+                    <option value="TECH">Technology & Coding</option>
+                    <option value="DESIGN">Design & Art</option>
+                    <option value="SPORTS">Sports & Fitness</option>
+                    <option value="GAMING">Gaming</option>
+                    <option value="ACADEMICS">Academics & Study</option>
+                    <option value="OTHER">Other</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-white/70 mb-1">Description *</label>
+                  <textarea 
+                    required
+                    rows={4}
+                    className="w-full p-3 bg-black/40 border border-white/10 rounded-lg text-white text-sm placeholder:text-white/40 focus:outline-none focus:border-primary-500"
+                    placeholder="What is the purpose of this community? Who should join?"
+                    value={newCommunity.description}
+                    onChange={(e) => setNewCommunity({ ...newCommunity, description: e.target.value })}
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 pt-2">
+                  <input 
+                    type="checkbox" 
+                    id="isPrivate"
+                    className="w-4 h-4 rounded border-white/10 bg-black/40 text-primary-500 focus:ring-0"
+                    checked={newCommunity.isPrivate}
+                    onChange={(e) => setNewCommunity({ ...newCommunity, isPrivate: e.target.checked })}
+                  />
+                  <label htmlFor="isPrivate" className="text-sm text-white/80 select-none">
+                    Make this community private (invite / approval required)
+                  </label>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setIsModalOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                    Create Community
+                  </Button>
+                </div>
+              </form>
+            </div>
           </div>
         )}
       </div>

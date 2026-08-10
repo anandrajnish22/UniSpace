@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
-import { Home, MapPin, Search, Filter, Loader2, DollarSign, UserCheck, Calendar } from 'lucide-react';
+import { Home, MapPin, Search, Filter, Loader2, DollarSign, UserCheck, Calendar, X } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 
 interface RoomListingItem {
   id: string;
@@ -22,6 +23,19 @@ export const RoommatesPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('');
   const [selectedGender, setSelectedGender] = useState('');
+
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [newListing, setNewListing] = useState({
+    title: '',
+    description: '',
+    location: '',
+    rentAmount: '',
+    type: 'ROOM_AVAILABLE',
+    genderPref: 'ANY',
+    availableFrom: '',
+  });
 
   const fetchListings = async () => {
     setIsLoading(true);
@@ -48,6 +62,37 @@ export const RoommatesPage = () => {
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm, selectedType, selectedGender]);
 
+  const handleCreateListing = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      await api.post('/roommates', {
+        title: newListing.title,
+        description: newListing.description,
+        location: newListing.location,
+        rentAmount: Number(newListing.rentAmount),
+        type: newListing.type,
+        genderPref: newListing.genderPref,
+        availableFrom: newListing.availableFrom ? new Date(newListing.availableFrom).toISOString() : new Date().toISOString(),
+      });
+      setIsModalOpen(false);
+      setNewListing({
+        title: '',
+        description: '',
+        location: '',
+        rentAmount: '',
+        type: 'ROOM_AVAILABLE',
+        genderPref: 'ANY',
+        availableFrom: '',
+      });
+      fetchListings();
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to post room listing');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-transparent py-12 px-4 sm:px-6 lg:px-8 text-white">
       <div className="max-w-7xl mx-auto">
@@ -56,7 +101,7 @@ export const RoommatesPage = () => {
             <h1 className="text-3xl font-display font-bold text-white">UniFind Roommates & PGs</h1>
             <p className="mt-2 text-white/60">Find compatible student roommates, PGs, and flats near campus.</p>
           </div>
-          <Button className="mt-4 md:mt-0">Post Room / Find Roommate</Button>
+          <Button onClick={() => setIsModalOpen(true)} className="mt-4 md:mt-0">Post Room / Find Roommate</Button>
         </div>
 
         {/* Filters */}
@@ -154,6 +199,118 @@ export const RoommatesPage = () => {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Create Roommate Listing Modal */}
+        {isModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md overflow-y-auto">
+            <div className="relative w-full max-w-xl bg-slate-900/90 border border-white/10 rounded-2xl p-6 shadow-2xl space-y-6 text-white my-8">
+              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                <h3 className="text-xl font-bold font-display">Post Room or Roommate Requirement</h3>
+                <button 
+                  onClick={() => setIsModalOpen(false)}
+                  className="p-1 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateListing} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-white/70 mb-1">Title *</label>
+                  <Input 
+                    required 
+                    placeholder="e.g. Spacious 2BHK Room near University Gate 2" 
+                    value={newListing.title}
+                    onChange={(e) => setNewListing({ ...newListing, title: e.target.value })}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-white/70 mb-1">Listing Type</label>
+                    <select
+                      className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-primary-500"
+                      value={newListing.type}
+                      onChange={(e) => setNewListing({ ...newListing, type: e.target.value })}
+                    >
+                      <option value="ROOM_AVAILABLE">Room Available</option>
+                      <option value="NEED_ROOMMATE">Need Roommate</option>
+                      <option value="PG">PG / Co-living</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-white/70 mb-1">Monthly Rent ($) *</label>
+                    <Input 
+                      required
+                      type="number" 
+                      placeholder="350" 
+                      value={newListing.rentAmount}
+                      onChange={(e) => setNewListing({ ...newListing, rentAmount: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-white/70 mb-1">Gender Preference</label>
+                    <select
+                      className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-primary-500"
+                      value={newListing.genderPref}
+                      onChange={(e) => setNewListing({ ...newListing, genderPref: e.target.value })}
+                    >
+                      <option value="ANY">Any Gender</option>
+                      <option value="MALE_ONLY">Male Only</option>
+                      <option value="FEMALE_ONLY">Female Only</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-white/70 mb-1">Location / Address *</label>
+                    <Input 
+                      required 
+                      placeholder="e.g. 5th Avenue, Near Tech Park" 
+                      value={newListing.location}
+                      onChange={(e) => setNewListing({ ...newListing, location: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-white/70 mb-1">Available From</label>
+                    <Input 
+                      type="date" 
+                      value={newListing.availableFrom}
+                      onChange={(e) => setNewListing({ ...newListing, availableFrom: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-white/70 mb-1">Description *</label>
+                  <textarea 
+                    required
+                    rows={4}
+                    className="w-full p-3 bg-black/40 border border-white/10 rounded-lg text-white text-sm placeholder:text-white/40 focus:outline-none focus:border-primary-500"
+                    placeholder="Provide details about amenities, room size, house rules, internet, etc..."
+                    value={newListing.description}
+                    onChange={(e) => setNewListing({ ...newListing, description: e.target.value })}
+                  />
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setIsModalOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                    Post Listing
+                  </Button>
+                </div>
+              </form>
+            </div>
           </div>
         )}
       </div>
