@@ -2,7 +2,8 @@ import { z } from 'zod';
 
 export const createJobSchema = z.object({
   title: z.string().min(3, 'Title is too short'),
-  description: z.string().min(20, 'Description is too short'),
+  companyName: z.string().optional(),
+  description: z.string().min(10, 'Description is too short'),
   location: z.string().min(2, 'Location is required'),
   type: z.enum(['FULL_TIME', 'PART_TIME', 'INTERNSHIP', 'CONTRACT']),
   workMode: z.enum(['REMOTE', 'ONSITE', 'HYBRID']),
@@ -11,7 +12,7 @@ export const createJobSchema = z.object({
   experience: z.string().optional(),
   deadline: z.string().datetime().optional(), // ISO string
   skills: z.array(z.string().uuid()).optional(),
-});
+}).passthrough();
 
 export const getJobsQuerySchema = z.object({
   type: z.enum(['FULL_TIME', 'PART_TIME', 'INTERNSHIP', 'CONTRACT']).optional().or(z.literal('')),

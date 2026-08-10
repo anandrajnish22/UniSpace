@@ -22,7 +22,7 @@ export const createJob = async (req: Request, res: Response, next: NextFunction)
     let companyId = user.company?.id;
 
     if (!companyId) {
-      const company = await prisma.companyProfile.create({
+      const company = await prisma.company.create({
         data: {
           userId: user.id,
           name: companyName || `${user.name}'s Company`,
