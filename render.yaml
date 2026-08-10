@@ -19,7 +19,7 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: CLIENT_URL
-        value: https://unispace.vercel.app # Adjust to actual Vercel URL
+        value: https://uni-space-rho.vercel.app
 
 databases:
   - name: unispace-db
