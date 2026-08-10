@@ -49,3 +49,5 @@ uploads/
 *.tsbuildinfo
 
 PROGRESS.md
+
+frontend/fix_colors.cjs
