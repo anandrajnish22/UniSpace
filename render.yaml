@@ -3,7 +3,7 @@ services:
     name: unispace-backend
     env: node
     region: ohio
-    plan: starter
+    plan: free
     rootDir: backend
     buildCommand: npm install && npm run build
     startCommand: npm run start
