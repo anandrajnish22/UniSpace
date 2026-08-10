@@ -147,10 +147,25 @@ export function LandingPage() {
       {/* ── HERO ────────────────────────────────────────── */}
       <section className="relative overflow-hidden pt-32 pb-20 lg:pt-44 lg:pb-32">
         {/* Background decorations */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full blur-3xl" style={{ background: 'rgba(232,75,58,0.08)' }} />
-          <div className="absolute top-20 -left-40 w-[500px] h-[500px] rounded-full blur-3xl" style={{ background: 'rgba(245,166,35,0.05)' }} />
-          <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] rounded-full blur-3xl" style={{ background: 'rgba(232,75,58,0.04)' }} />
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="hero-blob hero-blob-1" aria-hidden="true"></div>
+          <div className="hero-blob hero-blob-2" aria-hidden="true"></div>
+        </div>
+
+        {/* Floating Badges */}
+        <div className="absolute inset-0 pointer-events-none hidden lg:block z-0" aria-hidden="true">
+          <div className="float-badge" style={{ '--delay': '0s', '--x': '8%', '--y': '22%' } as React.CSSProperties}>
+            <Sparkles className="w-4 h-4 text-primary-500" /> Study
+          </div>
+          <div className="float-badge" style={{ '--delay': '0.6s', '--x': '78%', '--y': '18%' } as React.CSSProperties}>
+            <Briefcase className="w-4 h-4 text-blue-500" /> Work
+          </div>
+          <div className="float-badge" style={{ '--delay': '1.1s', '--x': '74%', '--y': '62%' } as React.CSSProperties}>
+            <MessageSquare className="w-4 h-4 text-green-500" /> Connect
+          </div>
+          <div className="float-badge" style={{ '--delay': '1.6s', '--x': '4%', '--y': '68%' } as React.CSSProperties}>
+            <Zap className="w-4 h-4 text-accent-500" /> Discover
+          </div>
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -215,7 +230,7 @@ export function LandingPage() {
             {/* Social proof */}
             <motion.div
               variants={fadeUp}
-              className="mt-12 flex items-center justify-center gap-6 text-sm text-surface-400"
+              className="mt-12 flex items-center justify-center gap-6 text-sm text-surface-100"
             >
               <div className="flex items-center gap-1.5">
                 <Shield className="w-4 h-4 text-green-500" />
@@ -237,7 +252,7 @@ export function LandingPage() {
       </section>
 
       {/* ── FEATURES ────────────────────────────────────── */}
-      <section id="features" className="py-20 lg:py-32 bg-white">
+      <section id="features" className="py-20 lg:py-32 bg-transparent">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial="hidden"
@@ -248,19 +263,19 @@ export function LandingPage() {
           >
             <motion.span
               variants={fadeUp}
-              className="inline-block px-3 py-1 rounded-full bg-primary-50 text-primary-600 text-sm font-medium mb-4"
+              className="inline-block px-3 py-1 rounded-full bg-primary-950/30 text-primary-400 text-sm font-medium mb-4"
             >
               Everything you need
             </motion.span>
             <motion.h2
               variants={fadeUp}
-              className="text-3xl sm:text-4xl font-bold font-display text-surface-900"
+              className="text-3xl sm:text-4xl font-bold font-display text-surface-50"
             >
               One platform, endless possibilities
             </motion.h2>
             <motion.p
               variants={fadeUp}
-              className="mt-4 text-lg text-surface-500 max-w-2xl mx-auto"
+              className="mt-4 text-lg text-surface-200 max-w-2xl mx-auto"
             >
               From finding your next internship to selling your old textbooks — UniSpace
               brings every part of student life together.
@@ -278,17 +293,17 @@ export function LandingPage() {
               <motion.div
                 key={feature.title}
                 variants={fadeUp}
-                className="group relative bg-surface-50/50 rounded-2xl p-8 border border-surface-200/50 hover:border-surface-200 hover:bg-white hover:shadow-card transition-all duration-300"
+                className="group relative bg-surface-800/50 rounded-2xl p-8 border border-surface-700/50 hover:border-surface-600 hover:bg-transparent hover:shadow-card transition-all duration-300"
               >
                 <div
                   className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center shadow-lg ${feature.shadow} mb-5 group-hover:scale-110 transition-transform duration-300`}
                 >
                   <feature.icon className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold text-surface-900 mb-2">
+                <h3 className="text-lg font-semibold text-surface-50 mb-2">
                   {feature.title}
                 </h3>
-                <p className="text-surface-500 text-sm leading-relaxed">
+                <p className="text-surface-200 text-sm leading-relaxed">
                   {feature.description}
                 </p>
               </motion.div>
@@ -309,13 +324,13 @@ export function LandingPage() {
           >
             <motion.span
               variants={fadeUp}
-              className="inline-block px-3 py-1 rounded-full bg-accent-50 text-accent-600 text-sm font-medium mb-4"
+              className="inline-block px-3 py-1 rounded-full bg-accent-950/30 text-accent-400 text-sm font-medium mb-4"
             >
               Simple & intuitive
             </motion.span>
             <motion.h2
               variants={fadeUp}
-              className="text-3xl sm:text-4xl font-bold font-display text-surface-900"
+              className="text-3xl sm:text-4xl font-bold font-display text-surface-50"
             >
               Get started in 3 steps
             </motion.h2>
@@ -336,18 +351,18 @@ export function LandingPage() {
               >
                 {/* Connector line */}
                 {i < steps.length - 1 && (
-                  <div className="hidden md:block absolute top-12 left-[60%] w-[80%] h-px bg-gradient-to-r from-surface-200 to-transparent" />
+                  <div className="hidden md:block absolute top-12 left-[60%] w-[80%] h-px bg-gradient-to-r from-surface-700 to-transparent" />
                 )}
-                <div className="relative inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-gradient-to-br from-primary-50 to-accent-50 border border-surface-200/50 mb-6">
-                  <step.icon className="w-10 h-10 text-primary-600" />
+                <div className="relative inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-surface-800/50 border border-surface-700/50 mb-6">
+                  <step.icon className="w-10 h-10 text-primary-400" />
                   <span className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-primary-600 text-white text-sm font-bold flex items-center justify-center shadow-md">
                     {step.number}
                   </span>
                 </div>
-                <h3 className="text-xl font-semibold text-surface-900 mb-2">
+                <h3 className="text-xl font-semibold text-surface-50 mb-2">
                   {step.title}
                 </h3>
-                <p className="text-surface-500 text-sm leading-relaxed max-w-xs mx-auto">
+                <p className="text-surface-200 text-sm leading-relaxed max-w-xs mx-auto">
                   {step.description}
                 </p>
               </motion.div>
@@ -380,7 +395,7 @@ export function LandingPage() {
             </motion.h2>
             <motion.p
               variants={fadeUp}
-              className="mt-4 text-surface-400 text-lg max-w-xl mx-auto"
+              className="mt-4 text-surface-100 text-lg max-w-xl mx-auto"
             >
               Join a growing community of students building their futures.
             </motion.p>
@@ -399,13 +414,13 @@ export function LandingPage() {
                 variants={fadeUp}
                 className="text-center"
               >
-                <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-4">
+                <div className="w-12 h-12 rounded-xl bg-transparent/5 border border-white/10 flex items-center justify-center mx-auto mb-4">
                   <stat.icon className="w-6 h-6 text-primary-400" />
                 </div>
                 <p className="text-3xl sm:text-4xl font-bold font-display text-gradient">
                   {stat.value}
                 </p>
-                <p className="text-surface-400 text-sm mt-1">{stat.label}</p>
+                <p className="text-surface-100 text-sm mt-1">{stat.label}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -413,7 +428,7 @@ export function LandingPage() {
       </section>
 
       {/* ── TESTIMONIALS ────────────────────────────────── */}
-      <section className="py-20 lg:py-32 bg-white">
+      <section className="py-20 lg:py-32 bg-transparent">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial="hidden"
@@ -424,13 +439,13 @@ export function LandingPage() {
           >
             <motion.span
               variants={fadeUp}
-              className="inline-block px-3 py-1 rounded-full bg-green-50 text-green-600 text-sm font-medium mb-4"
+              className="inline-block px-3 py-1 rounded-full bg-green-950/30 text-green-400 text-sm font-medium mb-4"
             >
               Student stories
             </motion.span>
             <motion.h2
               variants={fadeUp}
-              className="text-3xl sm:text-4xl font-bold font-display text-surface-900"
+              className="text-3xl sm:text-4xl font-bold font-display text-surface-50"
             >
               Loved by students everywhere
             </motion.h2>
@@ -447,7 +462,7 @@ export function LandingPage() {
               <motion.div
                 key={t.name}
                 variants={fadeUp}
-                className="bg-surface-50/50 rounded-2xl p-8 border border-surface-200/50"
+                className="bg-surface-800/50 rounded-2xl p-8 border border-surface-700/50"
               >
                 <div className="flex gap-1 mb-4">
                   {Array.from({ length: t.rating }).map((_, i) => (
@@ -457,7 +472,7 @@ export function LandingPage() {
                     />
                   ))}
                 </div>
-                <p className="text-surface-600 text-sm leading-relaxed mb-6">
+                <p className="text-surface-200 text-sm leading-relaxed mb-6">
                   "{t.content}"
                 </p>
                 <div className="flex items-center gap-3">
@@ -465,10 +480,10 @@ export function LandingPage() {
                     {t.name.split(' ').map((n) => n[0]).join('')}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-surface-900">
+                    <p className="text-sm font-semibold text-surface-50">
                       {t.name}
                     </p>
-                    <p className="text-xs text-surface-400">{t.role}</p>
+                    <p className="text-xs text-surface-100">{t.role}</p>
                   </div>
                 </div>
               </motion.div>
@@ -489,8 +504,8 @@ export function LandingPage() {
           >
             {/* Decorations */}
             <div className="absolute inset-0 overflow-hidden">
-              <div className="absolute -top-20 -right-20 w-[300px] h-[300px] rounded-full bg-white/5 blur-2xl" />
-              <div className="absolute -bottom-20 -left-20 w-[300px] h-[300px] rounded-full bg-accent-500/10 blur-2xl" />
+              <div className="absolute -top-20 -right-20 w-[300px] h-[300px] rounded-full bg-transparent/5 blur-2xl" />
+              <div className="absolute -bottom-20 -left-20 w-[300px] h-[300px] rounded-full bg-accent-950/300/10 blur-2xl" />
               <div
                 className="absolute inset-0 opacity-10"
                 style={{
@@ -514,7 +529,7 @@ export function LandingPage() {
                 <Link to="/register">
                   <Button
                     size="lg"
-                    className="bg-white text-primary-700 hover:bg-primary-50 shadow-lg"
+                    className="bg-transparent text-primary-700 hover:bg-primary-950/30 shadow-lg"
                     rightIcon={<ArrowRight className="w-5 h-5" />}
                   >
                     Get Started for Free
@@ -524,7 +539,7 @@ export function LandingPage() {
                   <Button
                     variant="ghost"
                     size="lg"
-                    className="text-white/90 hover:text-white hover:bg-white/10"
+                    className="text-white/90 hover:text-white hover:bg-transparent/10"
                   >
                     Already have an account?
                   </Button>

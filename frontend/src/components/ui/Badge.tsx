@@ -1,39 +1,60 @@
-import { type HTMLAttributes } from 'react';
-import { cn } from '@/lib/utils';
+import { clsx } from 'clsx';
 
-interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
-  variant?: 'default' | 'secondary' | 'outline' | 'success' | 'warning' | 'danger';
+type BadgeVariant = 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'accent';
+type BadgeSize = 'sm' | 'md';
+
+interface BadgeProps {
+  children: React.ReactNode;
+  variant?: BadgeVariant;
+  size?: BadgeSize;
+  dot?: boolean;
+  className?: string;
 }
 
-export const Badge = ({ className, variant = 'default', children, ...props }: BadgeProps) => {
-  const base = 'inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full transition-colors duration-200 leading-none tracking-wide';
+const variantStyles: Record<BadgeVariant, string> = {
+  default: 'bg-surface-700/50 text-surface-100 border border-surface-600',
+  primary: 'bg-primary-500/15 text-primary-400 border border-primary-500/25',
+  success: 'bg-success-500/15 text-success-400 border border-success-500/25',
+  warning: 'bg-warning-500/15 text-warning-400 border border-warning-500/25',
+  danger: 'bg-danger-500/15 text-danger-400 border border-danger-500/25',
+  accent: 'bg-accent-500/15 text-accent-400 border border-accent-500/25',
+};
 
-  const variants: Record<string, string> = {
-    // Default: subtle red-orange on dark bg
-    default:
-      'bg-primary-500/15 text-primary-400 border border-primary-500/25',
+const sizeStyles: Record<BadgeSize, string> = {
+  sm: 'px-2 py-0.5 text-xs',
+  md: 'px-2.5 py-1 text-xs',
+};
 
-    // Secondary: muted surface
-    secondary:
-      'bg-surface-700 text-surface-100 border border-surface-600',
-
-    // Outline only
-    outline:
-      'bg-transparent border border-surface-600 text-surface-100',
-
-    success:
-      'bg-success-500/15 text-success-400 border border-success-500/25',
-
-    warning:
-      'bg-amber-500/15 text-amber-400 border border-amber-500/25',
-
-    danger:
-      'bg-red-500/15 text-red-400 border border-red-500/25',
-  };
-
+export function Badge({
+  children,
+  variant = 'default',
+  size = 'sm',
+  dot = false,
+  className,
+}: BadgeProps) {
   return (
-    <span className={cn(base, variants[variant], className)} {...props}>
+    <span
+      className={clsx(
+        'inline-flex items-center gap-1 font-medium rounded-full',
+        variantStyles[variant],
+        sizeStyles[size],
+        className
+      )}
+    >
+      {dot && (
+        <span
+          className={clsx(
+            'w-1.5 h-1.5 rounded-full',
+            variant === 'success' && 'bg-success-400',
+            variant === 'warning' && 'bg-warning-400',
+            variant === 'danger' && 'bg-danger-400',
+            variant === 'primary' && 'bg-primary-400',
+            variant === 'accent' && 'bg-accent-400',
+            variant === 'default' && 'bg-surface-400'
+          )}
+        />
+      )}
       {children}
     </span>
   );
-};
+}

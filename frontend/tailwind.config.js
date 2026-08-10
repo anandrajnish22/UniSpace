@@ -42,16 +42,16 @@ export default {
         },
         // Surface: Dark backgrounds from ra.dev
         surface: {
-          50:  '#f5f3ef',   // --text-primary equivalent for light text
-          100: '#d4d0c8',   // --text-secondary
-          200: '#6b6b6b',   // --text-muted
-          300: '#2a2a2a',
-          400: '#1f1f1f',
-          500: '#1a1a1a',   // --surface-2
-          600: '#141414',   // --surface
-          700: '#111111',   // --bg-2
-          800: '#0d0d0d',   // --bg-1
-          900: '#0a0a0a',   // --bg (darkest)
+          50:  '#f5f3ef',   // --text-primary
+          100: '#e5e5e5',
+          200: '#d4d0c8',   // --text-secondary
+          300: '#a3a3a3',
+          400: '#8a8a8a',
+          500: '#9ca3af',   // --text-muted
+          600: '#404040',
+          700: '#262626',   // --bg-2
+          800: '#141414',   // --bg-1
+          900: '#0a0a0a',   // --bg-darkest
           950: '#050505',
         },
         success: {

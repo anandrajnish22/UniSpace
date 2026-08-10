@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: unispace-backend
+    env: node
+    region: ohio
+    plan: starter
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: unispace-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CLIENT_URL
+        value: https://unispace.vercel.app # Adjust to actual Vercel URL
+
+databases:
+  - name: unispace-db
+    databaseName: unispace
+    user: unispace
+    plan: free
+    region: ohio
+    postgresMajorVersion: 15

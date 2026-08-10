@@ -1,6 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
+import { useSocketStore } from '@/store/useSocketStore';
+import { useMessageStore } from '@/store/useMessageStore';
+import { useNotificationStore } from '@/store/useNotificationStore';
+import { GlobalSearch } from '@/components/ui/GlobalSearch';
 import {
   LayoutDashboard,
   Briefcase,
@@ -18,6 +22,8 @@ import {
   X,
   ChevronDown,
   Zap,
+  Search,
+  ShieldAlert,
 } from 'lucide-react';
 
 const navItems = [
@@ -34,11 +40,69 @@ export const AppLayout = () => {
   const location  = useLocation();
   const navigate  = useNavigate();
   const { user, logout } = useAuthStore();
+  const { socket, connect, disconnect } = useSocketStore();
+  const { addMessage, updateConversationTimestamp, setTyping } = useMessageStore();
+  const { addNotification } = useNotificationStore();
+  
   const [mobileMenuOpen,  setMobileMenuOpen]  = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsSearchOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem('unispace_token');
+    if (token) {
+      connect(token);
+    }
+    return () => disconnect();
+  }, [connect, disconnect]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleNewMessage = (message: any) => {
+      addMessage(message);
+      updateConversationTimestamp(message.conversationId, message);
+    };
+
+    const handleNewNotification = (notification: any) => {
+      addNotification(notification);
+    };
+
+    const handleUserTyping = ({ conversationId, userId }: any) => {
+      setTyping(conversationId, userId, true);
+    };
+
+    const handleUserStoppedTyping = ({ conversationId, userId }: any) => {
+      setTyping(conversationId, userId, false);
+    };
+
+    socket.on('new_message', handleNewMessage);
+    socket.on('new_notification', handleNewNotification);
+    socket.on('user_typing', handleUserTyping);
+    socket.on('user_stopped_typing', handleUserStoppedTyping);
+
+    return () => {
+      socket.off('new_message', handleNewMessage);
+      socket.off('new_notification', handleNewNotification);
+      socket.off('user_typing', handleUserTyping);
+      socket.off('user_stopped_typing', handleUserStoppedTyping);
+    };
+  }, [socket, addMessage, updateConversationTimestamp, addNotification, setTyping]);
 
   const handleLogout = () => {
     logout();
+    disconnect();
     navigate('/login');
   };
 
@@ -66,8 +130,11 @@ export const AppLayout = () => {
   };
 
   return (
-    <div className="min-h-screen flex" style={{ background: '#0a0a0a' }}>
-
+    <div className="min-h-screen flex relative overflow-hidden text-white bg-[#030014]">
+      {/* Background Effects */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary-900/20 via-[#030014] to-[#030014] z-0" />
+      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-30 mix-blend-screen z-0" />
+      
       {/* ── Sidebar (Desktop) ─────────────────────── */}
       <aside
         className="hidden lg:flex flex-col w-64 fixed top-0 left-0 h-full z-30"
@@ -95,6 +162,21 @@ export const AppLayout = () => {
           </Link>
         </div>
 
+        {/* Global Search Button */}
+        <div className="px-3 pt-4">
+          <button
+            onClick={() => setIsSearchOpen(true)}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl bg-surface-900 border border-surface-800 text-surface-400 hover:text-surface-50 hover:border-primary-500/30 transition-all text-sm group"
+          >
+            <Search className="w-4 h-4 shrink-0" />
+            <span className="flex-1 text-left">Search...</span>
+            <div className="flex items-center gap-0.5 opacity-50 group-hover:opacity-100 transition-opacity">
+              <kbd className="px-1.5 py-0.5 rounded-md bg-surface-800 text-[10px] font-mono border border-surface-700">⌘</kbd>
+              <kbd className="px-1.5 py-0.5 rounded-md bg-surface-800 text-[10px] font-mono border border-surface-700">K</kbd>
+            </div>
+          </button>
+        </div>
+
         {/* Nav items */}
         <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-0.5">
           {navItems.map((item) => (
@@ -103,10 +185,10 @@ export const AppLayout = () => {
 
           <div className="pt-6 mt-4 space-y-0.5" style={{ borderTop: '1px solid rgba(232, 75, 58, 0.08)' }}>
             {[
-              { to: '/messages',      label: 'Messages',      icon: MessageSquare },
-              { to: '/notifications', label: 'Notifications', icon: Bell },
+              { to: '/messages',      label: 'Messages',      icon: MessageSquare, badge: 0 },
+              { to: '/notifications', label: 'Notifications', icon: Bell,          badge: useNotificationStore().unreadCount },
               { to: '/settings',      label: 'Settings',      icon: Settings },
-            ].map(({ to, label, icon: Icon }) => (
+            ].map(({ to, label, icon: Icon, badge }) => (
               <Link
                 key={to}
                 to={to}
@@ -122,7 +204,12 @@ export const AppLayout = () => {
                 }}
               >
                 <Icon className="w-4.5 h-4.5 shrink-0" />
-                {label}
+                <span className="flex-1">{label}</span>
+                {!!badge && badge > 0 && (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold text-white bg-primary-500 shadow-glow-sm">
+                    {badge}
+                  </span>
+                )}
               </Link>
             ))}
           </div>
@@ -166,6 +253,19 @@ export const AppLayout = () => {
                 <User className="w-4 h-4" style={{ color: '#6b6b6b' }} />
                 View Profile
               </Link>
+              {user?.role === 'ADMIN' && (
+                <Link
+                  to="/admin"
+                  className="flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors duration-200"
+                  style={{ color: '#d4d0c8' }}
+                  onClick={() => setProfileMenuOpen(false)}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(26,26,26,0.9)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = '')}
+                >
+                  <ShieldAlert className="w-4 h-4 text-red-500" />
+                  Admin Panel
+                </Link>
+              )}
               <button
                 onClick={handleLogout}
                 className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors duration-200"
@@ -206,8 +306,15 @@ export const AppLayout = () => {
         </Link>
 
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsSearchOpen(true)}
+            className="p-2 text-surface-400 hover:text-surface-50 transition-colors"
+          >
+            <Search className="w-5 h-5" />
+          </button>
+          
           <div
-            className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ml-1"
             style={{ background: 'linear-gradient(135deg, #e84b3a, #f5a623)' }}
           >
             {user?.name?.charAt(0) || 'U'}
@@ -239,6 +346,23 @@ export const AppLayout = () => {
                 <NavItem key={item.to} {...item} onClick={() => setMobileMenuOpen(false)} />
               ))}
 
+              <div className="pt-6 mt-4 border-t border-surface-800 space-y-0.5">
+                {[
+                  { to: '/messages',      label: 'Messages',      icon: MessageSquare },
+                  { to: '/notifications', label: 'Notifications', icon: Bell },
+                  { to: '/settings',      label: 'Settings',      icon: Settings },
+                ].map(({ to, label, icon: Icon }) => (
+                  <Link
+                    key={to}
+                    to={to}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-surface-400"
+                  >
+                    <Icon className="w-4.5 h-4.5" />
+                    {label}
+                  </Link>
+                ))}
+              </div>
+
               <div className="pt-6 mt-4">
                 <button
                   onClick={handleLogout}
@@ -260,6 +384,9 @@ export const AppLayout = () => {
           <Outlet />
         </div>
       </main>
+
+      {/* Global Search Modal */}
+      <GlobalSearch isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </div>
   );
 };

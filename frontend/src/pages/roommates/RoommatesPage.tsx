@@ -49,31 +49,31 @@ export const RoommatesPage = () => {
   }, [searchTerm, selectedType, selectedGender]);
 
   return (
-    <div className="min-h-screen bg-surface-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-transparent py-12 px-4 sm:px-6 lg:px-8 text-white">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-display font-bold text-surface-900">UniFind Roommates & PGs</h1>
-            <p className="mt-2 text-surface-500">Find compatible student roommates, PGs, and flats near campus.</p>
+            <h1 className="text-3xl font-display font-bold text-white">UniFind Roommates & PGs</h1>
+            <p className="mt-2 text-white/60">Find compatible student roommates, PGs, and flats near campus.</p>
           </div>
           <Button className="mt-4 md:mt-0">Post Room / Find Roommate</Button>
         </div>
 
         {/* Filters */}
-        <div className="glass p-4 rounded-xl shadow-sm mb-8 grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-4 rounded-xl shadow-sm mb-8 grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="md:col-span-2 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-surface-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
             <input 
               type="text" 
               placeholder="Search by location, neighborhood, or campus area..."
-              className="w-full pl-10 pr-4 py-2 border border-surface-300 rounded-lg focus:ring-2 focus:ring-primary-500 transition-all"
+              className="w-full pl-10 pr-4 py-2 bg-black/20 border border-white/10 rounded-lg focus:ring-2 focus:ring-primary-500 transition-all text-white placeholder:text-white/40"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           
           <select 
-            className="w-full px-4 py-2 border border-surface-300 rounded-lg focus:ring-2 focus:ring-primary-500 bg-white"
+            className="w-full px-4 py-2 bg-black/20 border border-white/10 rounded-lg focus:ring-2 focus:ring-primary-500 text-white"
             value={selectedType}
             onChange={(e) => setSelectedType(e.target.value)}
           >
@@ -85,7 +85,7 @@ export const RoommatesPage = () => {
           </select>
 
           <select 
-            className="w-full px-4 py-2 border border-surface-300 rounded-lg focus:ring-2 focus:ring-primary-500 bg-white"
+            className="w-full px-4 py-2 bg-black/20 border border-white/10 rounded-lg focus:ring-2 focus:ring-primary-500 text-white"
             value={selectedGender}
             onChange={(e) => setSelectedGender(e.target.value)}
           >
@@ -102,52 +102,52 @@ export const RoommatesPage = () => {
             <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
           </div>
         ) : listings.length === 0 ? (
-          <div className="text-center py-20 glass rounded-xl">
-            <Home className="w-12 h-12 text-surface-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-surface-900">No housing listings found</h3>
-            <p className="text-surface-500 mt-1">Try adjusting your filters or location search.</p>
+          <div className="text-center py-20 bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl">
+            <Home className="w-12 h-12 text-white/40 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-white">No housing listings found</h3>
+            <p className="text-white/60 mt-1">Try adjusting your filters or location search.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {listings.map((l) => (
-              <div key={l.id} className="glass p-6 rounded-2xl bg-white border border-surface-200 hover:shadow-elevated transition-all flex flex-col h-full">
+              <div key={l.id} className="bg-white/5 backdrop-blur-xl border border-white/10 hover:border-primary-500/50 p-6 rounded-2xl hover:shadow-elevated transition-all flex flex-col h-full">
                 
                 <div className="flex justify-between items-start mb-4">
-                  <Badge variant="outline" className="text-primary-600 border-primary-200 bg-primary-50 font-bold">
+                  <Badge variant="outline" className="text-primary-400 border-primary-500/30 bg-primary-500/20 font-bold">
                     {l.type}
                   </Badge>
                   <div className="text-right">
-                    <span className="text-xl font-bold text-surface-900">₹{l.rentAmount.toLocaleString()}</span>
-                    <span className="text-xs text-surface-400"> / month</span>
+                    <span className="text-xl font-bold text-white">₹{l.rentAmount.toLocaleString()}</span>
+                    <span className="text-xs text-white/40"> / month</span>
                   </div>
                 </div>
 
-                <div className="flex items-center text-sm font-semibold text-surface-800 mb-3">
+                <div className="flex items-center text-sm font-semibold text-white mb-3">
                   <MapPin className="w-4 h-4 mr-1.5 text-primary-500 shrink-0" />
                   <span className="truncate">{l.location}</span>
                 </div>
 
-                <p className="text-surface-600 text-sm line-clamp-3 mb-6 leading-relaxed">
+                <p className="text-white/80 text-sm line-clamp-3 mb-6 leading-relaxed">
                   {l.description}
                 </p>
 
-                <div className="space-y-2 mb-6 text-xs text-surface-500">
+                <div className="space-y-2 mb-6 text-xs text-white/60">
                   <div className="flex items-center gap-1.5">
-                    <UserCheck className="w-3.5 h-3.5 text-surface-400" />
-                    <span>Gender Pref: <strong className="text-surface-700">{l.genderPref}</strong></span>
+                    <UserCheck className="w-3.5 h-3.5 text-white/40" />
+                    <span>Gender Pref: <strong className="text-white">{l.genderPref}</strong></span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-surface-400" />
+                    <Calendar className="w-3.5 h-3.5 text-white/40" />
                     <span>Available From: {new Date(l.availableFrom).toLocaleDateString()}</span>
                   </div>
                 </div>
 
-                <div className="mt-auto pt-4 border-t border-surface-100 flex items-center justify-between">
+                <div className="mt-auto pt-4 border-t border-white/10 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-full bg-surface-200 flex items-center justify-center font-bold text-xs text-surface-600">
+                    <div className="w-7 h-7 rounded-full bg-black/40 border border-white/10 flex items-center justify-center font-bold text-xs text-white/80">
                       {l.lister.name.charAt(0)}
                     </div>
-                    <span className="text-xs text-surface-600 font-medium">{l.lister.name}</span>
+                    <span className="text-xs text-white/80 font-medium">{l.lister.name}</span>
                   </div>
 
                   <Button size="sm" variant="outline">Contact</Button>
