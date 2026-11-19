@@ -8,10 +8,15 @@ export class AppError extends Error {
   public code: string;
   public isOperational: boolean;
 
-  constructor(message: string, statusCode: number, code: string = 'APP_ERROR') {
+  constructor(message: string, statusCodeOrCode: number | string, codeOrStatusCode: string | number = 'APP_ERROR') {
     super(message);
-    this.statusCode = statusCode;
-    this.code = code;
+    if (typeof statusCodeOrCode === 'number') {
+      this.statusCode = statusCodeOrCode;
+      this.code = typeof codeOrStatusCode === 'string' ? codeOrStatusCode : 'APP_ERROR';
+    } else {
+      this.statusCode = typeof codeOrStatusCode === 'number' ? codeOrStatusCode : 500;
+      this.code = statusCodeOrCode;
+    }
     this.isOperational = true;
     Object.setPrototypeOf(this, AppError.prototype);
   }

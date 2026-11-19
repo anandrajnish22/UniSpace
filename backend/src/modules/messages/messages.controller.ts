@@ -68,11 +68,16 @@ export const getMessages = async (req: AuthRequest, res: Response, next: NextFun
     });
 
     if (!member) {
-      throw new AppError('Not a member of this conversation', 'FORBIDDEN', 403);
+      throw new AppError('Not a member of this conversation', 403, 'FORBIDDEN');
     }
 
     const messages = await prisma.message.findMany({
       where: { conversationId: id },
+      include: {
+        sender: {
+          select: { id: true, name: true, profile: { select: { avatar: true } } },
+        },
+      },
       orderBy: { createdAt: 'asc' },
     });
 
@@ -95,11 +100,11 @@ export const sendMessage = async (req: AuthRequest, res: Response, next: NextFun
     });
 
     if (!conversation) {
-      throw new AppError('Conversation not found', 'NOT_FOUND', 404);
+      throw new AppError('Conversation not found', 404, 'NOT_FOUND');
     }
 
     if (!conversation.members.some((m: any) => m.userId === senderId)) {
-      throw new AppError('Not a member of this conversation', 'FORBIDDEN', 403);
+      throw new AppError('Not a member of this conversation', 403, 'FORBIDDEN');
     }
 
     const message = await prisma.message.create({
@@ -190,7 +195,7 @@ export const createConversation = async (req: AuthRequest, res: Response, next: 
     const currentUserId = req.user!.userId;
 
     if (otherUserId === currentUserId) {
-      throw new AppError('Cannot create a conversation with yourself', 'BAD_REQUEST', 400);
+      throw new AppError('Cannot create a conversation with yourself', 400, 'BAD_REQUEST');
     }
 
     // Check if conversation already exists

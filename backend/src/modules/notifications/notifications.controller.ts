@@ -30,7 +30,7 @@ export const markAsRead = async (req: AuthRequest, res: Response, next: NextFunc
     });
 
     if (!notification || notification.userId !== userId) {
-      throw new AppError('Notification not found', 'NOT_FOUND', 404);
+      throw new AppError('Notification not found', 404, 'NOT_FOUND');
     }
 
     const updated = await prisma.notification.update({
