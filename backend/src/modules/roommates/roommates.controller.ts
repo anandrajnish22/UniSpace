@@ -8,12 +8,63 @@ const prisma = new PrismaClient();
 export const createRoomListing = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user.userId;
-    const data = req.body;
+    const {
+      title,
+      description,
+      location,
+      rentAmount,
+      depositAmount,
+      availableFrom,
+      type,
+      genderPref,
+      amenities,
+      images
+    } = req.body;
+
+    // Normalize type
+    let normalizedType = (type || 'PG').toUpperCase();
+    if (normalizedType.includes('ROOM')) normalizedType = 'ROOMMATE';
+    else if (normalizedType.includes('FLAT') || normalizedType.includes('APARTMENT')) normalizedType = 'FLAT';
+    else if (normalizedType.includes('HOSTEL')) normalizedType = 'HOSTEL';
+    else if (normalizedType.includes('PG')) normalizedType = 'PG';
+    else if (normalizedType.includes('BED')) normalizedType = 'BED';
+    else normalizedType = 'PG';
+
+    // Normalize genderPref
+    let normalizedGender = (genderPref || 'ANY').toUpperCase();
+    if (normalizedGender.includes('MALE') && !normalizedGender.includes('FEMALE')) normalizedGender = 'MALE';
+    else if (normalizedGender.includes('FEMALE')) normalizedGender = 'FEMALE';
+    else normalizedGender = 'ANY';
+
+    // Combine title and description gracefully
+    let finalDescription = '';
+    if (title && description && !description.toLowerCase().includes(title.toLowerCase())) {
+      finalDescription = `${title}\n\n${description}`.trim();
+    } else {
+      finalDescription = description || title || 'Room listing';
+    }
+
+    let parsedDate = new Date();
+    if (availableFrom) {
+      const d = new Date(availableFrom);
+      if (!isNaN(d.getTime())) {
+        parsedDate = d;
+      }
+    }
 
     const listing = await prisma.roomListing.create({
       data: {
-        ...data,
+        type: normalizedType,
+        location: location || 'Campus Area',
+        rentAmount: Number(rentAmount) || 0,
+        depositAmount: depositAmount ? Number(depositAmount) : undefined,
+        availableFrom: parsedDate,
+        description: finalDescription,
+        genderPref: normalizedGender,
+        amenities: typeof amenities === 'string' ? amenities : (amenities ? JSON.stringify(amenities) : undefined),
+        images: typeof images === 'string' ? images : (images ? JSON.stringify(images) : undefined),
         listerId: userId,
+        status: 'AVAILABLE',
       }
     });
 

@@ -54,7 +54,7 @@ export const getConversations = async (req: AuthRequest, res: Response, next: Ne
 
 export const getMessages = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const userId = req.user!.userId;
 
     // Verify membership
@@ -89,7 +89,7 @@ export const getMessages = async (req: AuthRequest, res: Response, next: NextFun
 
 export const sendMessage = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const { content } = req.body;
     const senderId = req.user!.userId;
 
@@ -97,7 +97,7 @@ export const sendMessage = async (req: AuthRequest, res: Response, next: NextFun
     const conversation = await prisma.conversation.findUnique({
       where: { id },
       include: { members: true },
-    });
+    }) as any;
 
     if (!conversation) {
       throw new AppError('Conversation not found', 404, 'NOT_FOUND');

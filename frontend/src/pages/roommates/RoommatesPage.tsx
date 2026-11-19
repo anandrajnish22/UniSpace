@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '@/lib/api';
 import { Home, MapPin, Search, Filter, Loader2, DollarSign, UserCheck, Calendar, X } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
@@ -13,11 +14,12 @@ interface RoomListingItem {
   availableFrom: string;
   description: string;
   genderPref: string;
-  lister: { name: string; profile: { avatar: string } };
+  lister: { id?: string; name: string; profile: { avatar: string } };
   createdAt: string;
 }
 
 export const RoommatesPage = () => {
+  const navigate = useNavigate();
   const [listings, setListings] = useState<RoomListingItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -32,7 +34,7 @@ export const RoommatesPage = () => {
     description: '',
     location: '',
     rentAmount: '',
-    type: 'ROOM_AVAILABLE',
+    type: 'ROOMMATE',
     genderPref: 'ANY',
     availableFrom: '',
   });
@@ -81,16 +83,33 @@ export const RoommatesPage = () => {
         description: '',
         location: '',
         rentAmount: '',
-        type: 'ROOM_AVAILABLE',
+        type: 'ROOMMATE',
         genderPref: 'ANY',
         availableFrom: '',
       });
       fetchListings();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to post room listing');
+      const msg = err.response?.data?.message || err.message || 'Failed to post room listing';
+      const details = Array.isArray(err.response?.data?.details) 
+        ? err.response.data.details.map((d: any) => d.message || d.field).join(', ')
+        : (typeof err.response?.data?.details === 'string' ? err.response.data.details : '');
+      alert(details ? `${msg}: ${details}` : msg);
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleContact = async (listerId?: string) => {
+    if (!listerId) {
+      navigate('/messages');
+      return;
+    }
+    try {
+      await api.post('/messages', { userId: listerId });
+    } catch {
+      // Ignored if already exists or self
+    }
+    navigate('/messages');
   };
 
   return (
@@ -195,7 +214,7 @@ export const RoommatesPage = () => {
                     <span className="text-xs text-white/80 font-medium">{l.lister.name}</span>
                   </div>
 
-                  <Button size="sm" variant="outline">Contact</Button>
+                  <Button size="sm" variant="outline" onClick={() => handleContact(l.lister?.id)}>Contact</Button>
                 </div>
               </div>
             ))}
@@ -235,17 +254,18 @@ export const RoommatesPage = () => {
                       value={newListing.type}
                       onChange={(e) => setNewListing({ ...newListing, type: e.target.value })}
                     >
-                      <option value="ROOM_AVAILABLE">Room Available</option>
-                      <option value="NEED_ROOMMATE">Need Roommate</option>
+                      <option value="ROOMMATE">Room Available / Roommate</option>
                       <option value="PG">PG / Co-living</option>
+                      <option value="FLAT">Flat / Apartment</option>
+                      <option value="HOSTEL">Private Hostel</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-white/70 mb-1">Monthly Rent ($) *</label>
+                    <label className="block text-xs font-semibold text-white/70 mb-1">Monthly Rent (₹) *</label>
                     <Input 
                       required
                       type="number" 
-                      placeholder="350" 
+                      placeholder="e.g. 5000" 
                       value={newListing.rentAmount}
                       onChange={(e) => setNewListing({ ...newListing, rentAmount: e.target.value })}
                     />
@@ -258,8 +278,8 @@ export const RoommatesPage = () => {
                       onChange={(e) => setNewListing({ ...newListing, genderPref: e.target.value })}
                     >
                       <option value="ANY">Any Gender</option>
-                      <option value="MALE_ONLY">Male Only</option>
-                      <option value="FEMALE_ONLY">Female Only</option>
+                      <option value="MALE">Male Only</option>
+                      <option value="FEMALE">Female Only</option>
                     </select>
                   </div>
                 </div>
