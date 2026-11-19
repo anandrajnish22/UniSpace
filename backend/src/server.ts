@@ -101,6 +101,7 @@ app.use('/api/communities', communityRoutes);
 app.use('/api/study', studyRoutes);
 app.use('/api/roommates', roommateRoutes);
 app.use('/api/conversations', conversationRoutes);
+app.use('/api/messages', conversationRoutes);
 app.use('/api/notifications', notificationRoutes);
 // app.use('/api/reports', reportRoutes);
 app.use('/api/admin', adminRoutes);

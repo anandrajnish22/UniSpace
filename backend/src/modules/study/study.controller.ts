@@ -9,11 +9,19 @@ const prisma = new PrismaClient();
 export const createResource = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user.userId;
-    const data = req.body;
+    const { title, description, subject, semester, course, university, fileUrl, fileType, type } = req.body;
 
     const resource = await prisma.studyResource.create({
       data: {
-        ...data,
+        title: title || 'Study Material',
+        description: description || '',
+        subject: subject || 'General',
+        semester: semester || '1',
+        course: course || 'B.Tech / General',
+        university: university || 'Campus',
+        fileUrl: fileUrl || 'https://unispace.edu/notes/sample.pdf',
+        fileType: fileType || 'PDF',
+        type: (type || 'NOTE').toUpperCase(),
         uploaderId: userId,
       }
     });

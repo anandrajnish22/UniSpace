@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 export const createListing = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user.userId;
-    const data = req.body;
+    const { title, description, price, category, condition, location, isNegotiable } = req.body;
 
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
@@ -17,8 +17,15 @@ export const createListing = async (req: Request, res: Response, next: NextFunct
 
     const listing = await prisma.listing.create({
       data: {
-        ...data,
+        title: title || 'Marketplace Item',
+        description: description || '',
+        price: Number(price) || 0,
+        category: (category || 'OTHER').toUpperCase(),
+        condition: (condition || 'GOOD').toUpperCase(),
+        location: location || 'Campus',
+        isNegotiable: Boolean(isNegotiable),
         sellerId: userId,
+        status: 'ACTIVE',
       }
     });
 

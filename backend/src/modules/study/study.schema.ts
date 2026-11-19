@@ -1,16 +1,16 @@
 import { z } from 'zod';
 
 export const createStudyResourceSchema = z.object({
-  title: z.string().min(3, 'Title is too short'),
+  title: z.string().min(2, 'Title is too short'),
   description: z.string().optional(),
   subject: z.string().optional(),
   semester: z.string().optional(),
   course: z.string().optional(),
   university: z.string().optional(),
-  fileUrl: z.string().url('File URL must be a valid link'),
+  fileUrl: z.string().optional().default('https://unispace.edu/notes/sample.pdf'),
   fileType: z.string().optional(),
-  type: z.enum(['NOTE', 'PDF', 'PREVIOUS_PAPER', 'ROADMAP', 'TUTORIAL']).default('NOTE'),
-});
+  type: z.string().optional().default('NOTE'),
+}).passthrough();
 
 export const createStudyGroupSchema = z.object({
   name: z.string().min(3, 'Name is too short'),

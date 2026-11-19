@@ -8,12 +8,41 @@ const prisma = new PrismaClient();
 export const createEvent = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user.userId;
-    const data = req.body;
+    const {
+      title,
+      description,
+      venue,
+      date,
+      startTime,
+      endTime,
+      capacity,
+      ticketPrice,
+      category,
+      bannerUrl
+    } = req.body;
+
+    let parsedDate = new Date();
+    if (date) {
+      const d = new Date(date);
+      if (!isNaN(d.getTime())) {
+        parsedDate = d;
+      }
+    }
 
     const event = await prisma.event.create({
       data: {
-        ...data,
+        title: title || 'Campus Event',
+        description: description || '',
+        venue: venue || 'Campus Main Hall',
+        date: parsedDate,
+        startTime: startTime || '10:00 AM',
+        endTime: endTime || '05:00 PM',
+        capacity: capacity ? Number(capacity) : 100,
+        ticketPrice: ticketPrice ? Number(ticketPrice) : 0,
+        category: (category || 'WORKSHOP').toUpperCase(),
+        bannerUrl: bannerUrl || null,
         organizerId: userId,
+        status: 'PUBLISHED',
       }
     });
 

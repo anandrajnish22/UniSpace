@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
-import { BookOpen, Download, FileText, Search, Loader2, Users, Plus, ExternalLink } from 'lucide-react';
+import { BookOpen, Download, FileText, Search, Loader2, Users, Plus, ExternalLink, X } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 
 interface Resource {
   id: string;
@@ -32,6 +33,19 @@ export const StudyPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('');
+
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [newResource, setNewResource] = useState({
+    title: '',
+    subject: '',
+    type: 'NOTE',
+    description: '',
+    fileUrl: '',
+    semester: '3',
+    course: 'B.Tech CSE',
+  });
 
   const fetchResources = async () => {
     setIsLoading(true);
@@ -82,6 +96,47 @@ export const StudyPage = () => {
     }
   };
 
+  const handleCreateResource = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      await api.post('/study/resources', {
+        title: newResource.title,
+        subject: newResource.subject,
+        type: newResource.type,
+        description: newResource.description,
+        fileUrl: newResource.fileUrl || 'https://unispace.edu/notes/sample.pdf',
+        semester: newResource.semester,
+        course: newResource.course,
+      });
+      setIsModalOpen(false);
+      setNewResource({
+        title: '',
+        subject: '',
+        type: 'NOTE',
+        description: '',
+        fileUrl: '',
+        semester: '3',
+        course: 'B.Tech CSE',
+      });
+      fetchResources();
+    } catch (err: any) {
+      const msg = err.response?.data?.message || err.message || 'Failed to upload study resource';
+      alert(msg);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleJoinGroup = async (groupId: string) => {
+    try {
+      await api.post(`/study/groups/${groupId}/join`);
+      fetchGroups();
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to toggle group membership');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-transparent py-12 px-4 sm:px-6 lg:px-8 text-white">
       <div className="max-w-7xl mx-auto">
@@ -91,7 +146,7 @@ export const StudyPage = () => {
             <h1 className="text-3xl font-display font-bold text-white">UniStudy Hub</h1>
             <p className="mt-2 text-white/60">Access shared notes, previous year papers, and join study groups.</p>
           </div>
-          <Button className="mt-4 md:mt-0">
+          <Button onClick={() => setIsModalOpen(true)} className="mt-4 md:mt-0">
             <Plus className="w-4 h-4 mr-2" /> Upload Resource
           </Button>
         </div>
@@ -219,12 +274,101 @@ export const StudyPage = () => {
                     {g.description && <p className="text-white/80 text-sm">{g.description}</p>}
 
                     <div className="pt-3 border-t border-white/10 flex justify-end">
-                      <Button size="sm">Join Group</Button>
+                      <Button size="sm" onClick={() => handleJoinGroup(g.id)}>Toggle Join</Button>
                     </div>
                   </div>
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Upload Resource Modal */}
+        {isModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md overflow-y-auto">
+            <div className="relative w-full max-w-xl bg-slate-900/90 border border-white/10 rounded-2xl p-6 shadow-2xl space-y-6 text-white my-8">
+              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                <h3 className="text-xl font-bold font-display">Upload Study Resource</h3>
+                <button 
+                  onClick={() => setIsModalOpen(false)}
+                  className="p-1 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateResource} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-white/70 mb-1">Resource Title *</label>
+                  <Input 
+                    required 
+                    placeholder="e.g. Data Structures & Algorithms Hand-written Notes" 
+                    value={newResource.title}
+                    onChange={(e) => setNewResource({ ...newResource, title: e.target.value })}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-white/70 mb-1">Subject / Course *</label>
+                    <Input 
+                      required 
+                      placeholder="e.g. Computer Science, DBMS, OS" 
+                      value={newResource.subject}
+                      onChange={(e) => setNewResource({ ...newResource, subject: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-white/70 mb-1">Resource Type</label>
+                    <select
+                      className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-primary-500"
+                      value={newResource.type}
+                      onChange={(e) => setNewResource({ ...newResource, type: e.target.value })}
+                    >
+                      <option value="NOTE">Lecture Notes</option>
+                      <option value="PDF">E-Book / PDF</option>
+                      <option value="PREVIOUS_PAPER">Previous Year Paper (PYQ)</option>
+                      <option value="ROADMAP">Study Roadmap</option>
+                      <option value="TUTORIAL">Cheatsheet / Tutorial</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-white/70 mb-1">Resource / Document URL</label>
+                  <Input 
+                    placeholder="e.g. https://drive.google.com/... or leave blank for default" 
+                    value={newResource.fileUrl}
+                    onChange={(e) => setNewResource({ ...newResource, fileUrl: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-white/70 mb-1">Description</label>
+                  <textarea 
+                    rows={3}
+                    className="w-full p-3 bg-black/40 border border-white/10 rounded-lg text-white text-sm placeholder:text-white/40 focus:outline-none focus:border-primary-500"
+                    placeholder="Briefly describe what topics, units, or modules this material covers..."
+                    value={newResource.description}
+                    onChange={(e) => setNewResource({ ...newResource, description: e.target.value })}
+                  />
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setIsModalOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                    Upload Resource
+                  </Button>
+                </div>
+              </form>
+            </div>
           </div>
         )}
       </div>

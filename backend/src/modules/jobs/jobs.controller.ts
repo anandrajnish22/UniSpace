@@ -8,7 +8,20 @@ const prisma = new PrismaClient();
 export const createJob = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user.userId;
-    const { skills, companyName, ...jobData } = req.body;
+    const {
+      title,
+      description,
+      location,
+      type,
+      workMode,
+      workplaceType,
+      salaryMin,
+      salaryMax,
+      experience,
+      deadline,
+      skills,
+      companyName
+    } = req.body;
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -34,14 +47,19 @@ export const createJob = async (req: Request, res: Response, next: NextFunction)
 
     const job = await prisma.job.create({
       data: {
-        ...jobData,
+        title: title || 'Job Opening',
+        description: description || '',
+        location: location || 'Remote',
+        type: (type || 'FULL_TIME').toUpperCase(),
+        workMode: (workMode || workplaceType || 'REMOTE').toUpperCase(),
+        salaryMin: salaryMin ? Math.round(Number(salaryMin)) : undefined,
+        salaryMax: salaryMax ? Math.round(Number(salaryMax)) : undefined,
+        experience: experience || 'Fresher',
+        deadline: deadline ? new Date(deadline) : undefined,
         companyId,
-        skills: skills && Array.isArray(skills) ? {
-          create: skills.map((skillId: string) => ({ skillId }))
-        } : undefined
+        isActive: true,
       },
       include: {
-        skills: { include: { skill: true } },
         company: true
       }
     });

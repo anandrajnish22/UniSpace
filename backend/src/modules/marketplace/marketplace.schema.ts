@@ -1,14 +1,14 @@
 import { z } from 'zod';
 
 export const createListingSchema = z.object({
-  title: z.string().min(3, 'Title is too short'),
-  description: z.string().min(10, 'Description is too short'),
+  title: z.string().min(2, 'Title is too short'),
+  description: z.string().optional().default(''),
   price: z.coerce.number().min(0, 'Price cannot be negative'),
-  category: z.enum(['BOOKS', 'ELECTRONICS', 'FURNITURE', 'CLOTHING', 'NOTES', 'OTHER']),
-  condition: z.enum(['NEW', 'LIKE_NEW', 'GOOD', 'FAIR', 'POOR']),
-  location: z.string().min(2, 'Location is required'),
-  isNegotiable: z.boolean().default(false),
-});
+  category: z.string().optional().default('OTHER'),
+  condition: z.string().optional().default('GOOD'),
+  location: z.string().optional().default('Campus'),
+  isNegotiable: z.boolean().optional().default(false),
+}).passthrough();
 
 export const getListingsQuerySchema = z.object({
   category: z.enum(['BOOKS', 'ELECTRONICS', 'FURNITURE', 'CLOTHING', 'NOTES', 'OTHER']).optional().or(z.literal('')),
