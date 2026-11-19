@@ -48,6 +48,14 @@ uploads/
 # TypeScript
 *.tsbuildinfo
 
+# Project Reports & Documentation (Local Only)
+UniSpace_BTech_CSE_Project_Report.*
+*.doc
+*.docx
+*.pdf
+build_full_report.py
+report_diagrams/
+
 PROGRESS.md
 
 frontend/fix_colors.cjs
