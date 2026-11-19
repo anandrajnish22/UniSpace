@@ -96,6 +96,23 @@ async function main() {
     include: { company: true }
   });
 
+  const adminUser = await prisma.user.create({
+    data: {
+      email: 'admin@unispace.edu',
+      name: 'System Admin',
+      passwordHash: defaultPassword,
+      role: 'ADMIN',
+      isEmailVerified: true,
+      profile: {
+        create: {
+          bio: 'UniSpace Administrator',
+          university: 'State University',
+          department: 'Administration',
+        }
+      }
+    }
+  });
+
   // 4. Create Jobs
   console.log('Creating jobs...');
   await prisma.job.create({
@@ -205,6 +222,7 @@ async function main() {
   console.log('Test Accounts:');
   console.log('Student: student@university.edu / password123');
   console.log('Company: hr@techcorp.com / password123');
+  console.log('Admin:   admin@unispace.edu / password123');
   console.log('----------------------------------------------------');
 }
 

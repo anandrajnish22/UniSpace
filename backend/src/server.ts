@@ -46,6 +46,16 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// ── Root Endpoint ────────────────────────────────────────────────
+app.get('/', (_req, res) => {
+  res.json(successResponse('Welcome to UniSpace API Server', {
+    frontendUrl: env.CLIENT_URL,
+    healthCheck: '/api/health',
+    version: '1.0.0',
+    documentation: 'UniSpace Student Digital Ecosystem Backend',
+  }));
+});
+
 // ── Health Check ────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => {
   res.json(successResponse('UniSpace API is running', {
