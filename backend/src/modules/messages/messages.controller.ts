@@ -127,6 +127,57 @@ export const sendMessage = async (req: AuthRequest, res: Response, next: NextFun
       emitToUser(io, member.userId, 'new_message', message);
     });
 
+    // Smart interactive demo auto-reply for showcase
+    const otherMember = otherMembers[0];
+    if (otherMember) {
+      setTimeout(async () => {
+        try {
+          const peer = await prisma.user.findUnique({
+            where: { id: otherMember.userId },
+            include: { profile: true }
+          });
+          
+          if (peer && (peer.email.includes('priya') || peer.email.includes('amit'))) {
+            let replyText = "Got it! Thanks for confirming. See you soon! 👍";
+            const lower = (content || '').toLowerCase();
+            if (lower.includes('hi') || lower.includes('hello') || lower.includes('hey')) {
+              replyText = "Hey! How is your semester preparation going?";
+            } else if (lower.includes('price') || lower.includes('offer') || lower.includes('deal') || lower.includes('discount')) {
+              replyText = "That deal works for me. Really appreciate it!";
+            } else if (lower.includes('time') || lower.includes('where') || lower.includes('meet') || lower.includes('library')) {
+              replyText = "Sure! I'll be at the central library around that time.";
+            } else if (lower.includes('room') || lower.includes('flat') || lower.includes('rent')) {
+              replyText = "Sounds great! I'll come over to inspect the room as discussed.";
+            } else if (lower.includes('okay') || lower.includes('ok') || lower.includes('sure') || lower.includes('yes')) {
+              replyText = "Awesome! See you then. Have a great day! ✨";
+            }
+
+            const autoMsg = await prisma.message.create({
+              data: {
+                content: replyText,
+                conversationId: id,
+                senderId: peer.id,
+              },
+              include: {
+                sender: {
+                  select: { id: true, name: true, profile: { select: { avatar: true } } },
+                },
+              },
+            });
+
+            await prisma.conversation.update({
+              where: { id },
+              data: { updatedAt: new Date() },
+            });
+
+            emitToUser(io, senderId, 'new_message', autoMsg);
+          }
+        } catch (e) {
+          console.error('Demo auto-reply error:', e);
+        }
+      }, 1500);
+    }
+
     res.status(201).json(successResponse('Message sent successfully', message));
   } catch (error) {
     next(error);

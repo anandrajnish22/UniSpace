@@ -60,6 +60,9 @@ export const useMessageStore = create<MessageState>((set) => ({
   addMessage: (message) =>
     set((state) => {
       const convMessages = state.messages[message.conversationId] || [];
+      if (convMessages.some(m => m.id === message.id)) {
+        return state;
+      }
       return {
         messages: {
           ...state.messages,

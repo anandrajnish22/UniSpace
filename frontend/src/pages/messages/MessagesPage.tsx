@@ -16,7 +16,9 @@ export const MessagesPage = () => {
     typingUsers,
     setConversations, 
     setMessages, 
-    setActiveConversation 
+    setActiveConversation,
+    addMessage,
+    updateConversationTimestamp
   } = useMessageStore();
 
   const [isLoading, setIsLoading] = useState(true);
@@ -26,11 +28,18 @@ export const MessagesPage = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // 1. Fetch conversations initially
   useEffect(() => {
     const fetchConversations = async () => {
       try {
         const res = await api.get('/conversations');
-        setConversations(res.data.data);
+        if (res.data?.success && res.data?.data) {
+          setConversations(res.data.data);
+          // If no active conversation selected yet, default to the first one
+          if (!activeConversationId && res.data.data.length > 0) {
+            setActiveConversation(res.data.data[0].id);
+          }
+        }
       } catch (err) {
         console.error('Failed to load conversations', err);
       } finally {
@@ -40,43 +49,89 @@ export const MessagesPage = () => {
     fetchConversations();
   }, [setConversations]);
 
+  // 2. Fetch messages for active conversation
   useEffect(() => {
-    if (activeConversationId && !messages[activeConversationId]) {
-      const fetchMessages = async () => {
-        try {
-          const res = await api.get(`/conversations/${activeConversationId}/messages`);
-          setMessages(activeConversationId, res.data.data);
-        } catch (err) {
-          console.error('Failed to load messages', err);
-        }
-      };
-      fetchMessages();
-    }
-  }, [activeConversationId, messages, setMessages]);
+    if (!activeConversationId) return;
 
+    const fetchMessages = async () => {
+      try {
+        const res = await api.get(`/conversations/${activeConversationId}/messages`);
+        if (res.data?.success && res.data?.data) {
+          setMessages(activeConversationId, res.data.data);
+        }
+      } catch (err) {
+        console.error('Failed to load messages', err);
+      }
+    };
+
+    fetchMessages();
+
+    // Gentle polling fallback every 3s to sync new replies seamlessly
+    const interval = setInterval(fetchMessages, 3000);
+    return () => clearInterval(interval);
+  }, [activeConversationId, setMessages]);
+
+  // 3. Socket room join/leave
   useEffect(() => {
-    if (activeConversationId) {
-      socket?.emit('join_conversation', activeConversationId);
+    if (activeConversationId && socket) {
+      socket.emit('join_conversation', activeConversationId);
       return () => {
-        socket?.emit('leave_conversation', activeConversationId);
+        socket.emit('leave_conversation', activeConversationId);
       };
     }
   }, [activeConversationId, socket]);
 
+  // 4. Scroll to bottom whenever messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, activeConversationId]);
 
+  // 5. Send message with instant optimistic UI update
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !activeConversationId) return;
+    const content = newMessage.trim();
+    if (!content || !activeConversationId || isSending) return;
+
+    setNewMessage('');
+    setIsSending(true);
+
+    const tempId = 'temp-' + Date.now();
+    const optimisticMsg: Message = {
+      id: tempId,
+      conversationId: activeConversationId,
+      senderId: user?.id || '',
+      content: content,
+      createdAt: new Date().toISOString(),
+      sender: {
+        id: user?.id || '',
+        name: user?.name || 'You',
+        profile: { avatar: (user as any)?.profileImage || (user as any)?.profile?.avatar || null }
+      }
+    };
+
+    // Instant local state update
+    addMessage(optimisticMsg);
+    updateConversationTimestamp(activeConversationId, optimisticMsg);
 
     try {
-      setIsSending(true);
-      await api.post(`/conversations/${activeConversationId}/messages`, {
-        content: newMessage.trim()
+      const res = await api.post(`/conversations/${activeConversationId}/messages`, {
+        content: content
       });
-      setNewMessage('');
+
+      if (res.data?.success && res.data?.data) {
+        const realMsg = res.data.data;
+        useMessageStore.setState((state) => {
+          const convMsgs = state.messages[activeConversationId] || [];
+          return {
+            messages: {
+              ...state.messages,
+              [activeConversationId]: convMsgs.map(m => m.id === tempId ? realMsg : m)
+            }
+          };
+        });
+        updateConversationTimestamp(activeConversationId, realMsg);
+      }
+
       socket?.emit('typing_stop', { conversationId: activeConversationId });
     } catch (err) {
       console.error('Failed to send message', err);
@@ -228,7 +283,7 @@ export const MessagesPage = () => {
                     )}
                     <div className={`max-w-[75%] rounded-2xl px-4 py-2 ${
                       isMine 
-                        ? 'bg-primary-600 text-white rounded-br-sm' 
+                        ? 'bg-primary-600 text-white rounded-br-sm shadow-md' 
                         : 'bg-white/10 border border-white/10 text-white rounded-bl-sm backdrop-blur-md'
                     }`}>
                       <p className="text-sm break-words">{msg.content}</p>
@@ -271,7 +326,7 @@ export const MessagesPage = () => {
                 <button 
                   type="submit"
                   disabled={!newMessage.trim() || isSending}
-                  className="w-12 h-12 rounded-xl bg-primary-600 flex items-center justify-center text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary-500 transition-colors shrink-0"
+                  className="w-12 h-12 rounded-xl bg-primary-600 flex items-center justify-center text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary-500 transition-colors shrink-0 shadow-glow"
                 >
                   {isSending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5 ml-1" />}
                 </button>

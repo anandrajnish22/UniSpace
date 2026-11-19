@@ -19,7 +19,7 @@ export const useSocketStore = create<SocketState>((set, get) => ({
     
     const socket = io(socketUrl, {
       auth: { token },
-      transports: ['websocket'],
+      transports: ['polling', 'websocket'],
     });
 
     socket.on('connect', () => set({ isConnected: true }));
