@@ -50,10 +50,14 @@ uploads/
 
 # Project Reports & Documentation (Local Only)
 UniSpace_BTech_CSE_Project_Report.*
+UniSpace_BTech_CSE_Presentation.*
 *.doc
 *.docx
 *.pdf
+*.pptx
+*.ppt
 build_full_report.py
+build_presentation.py
 report_diagrams/
 
 PROGRESS.md
